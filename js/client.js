@@ -216,14 +216,11 @@ CollectionBackgroundItem.prototype = {
     holdIfGetOut: function (itemBackground) {
         if (itemBackground.position.x <= - dataStorage.size.width / 4) {
             itemBackground.position.x += 3 / 2 * dataStorage.size.width;
-        }
-        if (itemBackground.position.x >= dataStorage.size.width * 5 / 4) {
+        } else if (itemBackground.position.x >= dataStorage.size.width * 5 / 4) {
             itemBackground.position.x -= 3 / 2 * dataStorage.size.width;
-        }
-        if (itemBackground.position.y <= - dataStorage.size.height / 4) {
+        } else if (itemBackground.position.y <= - dataStorage.size.height / 4) {
             itemBackground.position.y += 3 / 2 * dataStorage.size.height;
-        }
-        if (itemBackground.position.y >= dataStorage.size.height * 5 / 4) {
+        } else if (itemBackground.position.y >= dataStorage.size.height * 5 / 4) {
             itemBackground.position.y -= 3 / 2 * dataStorage.size.height;
         }
     },
@@ -671,6 +668,7 @@ Garbage.prototype = {
 
 var Noch = function(WS_URL, renderingTool) {
 
+    this.callbacks = {};
     this.started = false;
     this.players = {};
     this.border = [];
@@ -684,6 +682,14 @@ var Noch = function(WS_URL, renderingTool) {
 };
 
 Noch.prototype = {
+
+    addCallback: function(key, callback) {
+        this.callbacks[key] = callback;
+    },
+
+    removeCallback: function(key) {
+        delete this.callbacks[key];
+    },
 
     drawGarbage: function() {
 
@@ -699,7 +705,6 @@ Noch.prototype = {
 
             var pos = dataStorage.scale(this.toPlayerCS(this.garbageAll[key].position));
 
-            console.log(pos.x);
             this.drawElement(pos.x, pos.y, radius, this.garbageAll[key].color);
             this.drawLetter(pos.x, pos.y, fontSize, element, radius, length);
         }
@@ -958,6 +963,10 @@ Noch.prototype = {
     },
 
     run: function() {
+
+        for (var key in this.callbacks) {
+            this.callbacks[key]();
+        }
 
         if (this.background) {
             this.background.tick();

@@ -155,21 +155,23 @@
             if (!animate){
                return; 
             }
-            requestAnimationFrame(animation);
+            //requestAnimationFrame(animation);
             
         }
         function handlerIn(){ 
             //alert("in");
             //intervalID = setInterval(animation,30);
-            animate = !animate;
-            requestId = requestAnimationFrame(animation);
-
+            //animate = !animate;
+            //requestId = requestAnimationFrame(animation);
+            Game.addCallback('button', animation);
 
         }
         function handlerOut(){
             //clearInterval(intervalID);
-            cancelAnimationFrame(requestId);
+            /*cancelAnimationFrame(requestId);
             animate = !animate;
+            */
+            Game.removeCallback('button');
             tick = 0;
             $("#garage").attr("src","garage/(1).png");
             $("#try_more").hide(200);

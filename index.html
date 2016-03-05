@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>N-o-C-H</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script type="text/javascript" src="farbtastic.js"></script>
+    <script src="lib/easeljs-0.8.2.min.js"></script>
+    <script src="https://code.createjs.com/preloadjs-0.6.2.min.js"></script>
+</head>
+<style>
+    .farbtastic {
+        position: relative;margin-left: 4%; margin-top: 10px;
+    }
+    .farbtastic * {
+        position: absolute;
+        cursor: crosshair;
+    }
+    .farbtastic, .farbtastic .wheel {
+        width: 195px;
+        height: 195px;
+    }
+    .farbtastic .color, .farbtastic .overlay {
+        top: 49px;
+        left: 47px;
+        width: 100px;
+        height:100px;
+    }
+    .farbtastic .wheel {
+        background: url(/picker/wheel.png) no-repeat;
+        width: 195px;
+        height: 195px;
+    }
+    .farbtastic .overlay {
+        background: url(../picker/mask.png) no-repeat;
+    }
+    .farbtastic .marker {
+        width: 17px;
+        height: 17px;
+        margin: -8px 0 0 -8px;
+        overflow: hidden;
+        background: url(../picker/marker.png) no-repeat;
+    }
+
+    img{
+        float:left;
+        width: 20%;
+    }
+    .menu_selection{
+        width: 100%;
+        height: 100%;
+    // background-color: #120B05;
+
+    }
+    #game_menu{
+        padding-top:6px;padding-bottom:6px;
+
+    }
+    .select_div{
+        float:left;  width: 75%;
+        position: relative;
+        left: 2%;
+        //border: 2px #000 solid;
+        background-size: contain;
+    }
+    .select_div select {
+        margin: 0;
+        font: bold 20px tellural_altbold;
+        background-color: #18180a;
+        background-image: url(../assets/123_dlinny.png) ;
+        background-position:  right ;
+        background-repeat: no-repeat;
+        //background:  ;//background-color: transparent;
+       background-size: cover;
+        -webkit-appearance: none; border: none;
+        color: #fff;   outline:none;
+        -moz-appearance:none;
+        appearance:none; z-index: 20;
+        cursor:pointer;
+
+
+    }
+    #stick{
+        position: absolute; top: 50px;  width: 30px; height: 30px; right: 30px;background: url(/assets/stick.png) no-repeat; background-size: cover;;
+    }
+    #stick_2{
+        position: absolute; top: 50px;  width: 30px; height: 30px; left: 30px;background: url(/assets/stick_2.png) no-repeat; background-size: cover;;
+    }
+    #vk{
+        position: absolute; top: 5px;  width: 60px; height: 60px; right: 37px;background: url(/assets/vk.png) no-repeat; background-size: cover;;
+    }
+    #fb{
+        position: absolute; top: 60px;  width: 60px; height: 60px; right: 5px;background: url(/assets/fb.png) no-repeat; background-size: cover;;
+    }
+    #vk{
+        position: absolute; top: 5px;  width: 60px; height: 60px; right: 37px;background: url(/assets/vk.png) no-repeat; background-size: cover;;
+    }
+    #fb{
+        position: absolute; top: 60px;  width: 60px; height: 60px; right: 5px;background: url(/assets/fb.png) no-repeat; background-size: cover;;
+    }
+    #rus{ cursor: pointer;
+        position: absolute; top: 5px;  width: 60px; height: 60px; left: 37px;background: url(/assets/rus.png) no-repeat; background-size: cover;;
+    }
+    #eng{ cursor: pointer;
+        position: absolute; top: 60px;  width: 60px; height: 60px; left: 5px;background: url(/assets/eng.png) no-repeat; background-size: cover;;
+    }
+    #vk:hover{ top: -18px; right: 35px;
+        width: 80px; height: 80px;
+    }
+    #fb:hover {
+        top: 63px; right: -13px;
+        width: 80px; height: 80px;
+    }
+    #rus:hover{ top: -18px; left: 35px;
+        width: 80px; height: 80px;
+    }
+    #eng:hover {
+        top: 63px; left: -13px;
+        width: 80px; height: 80px;
+    }
+</style>
+<script>
+    
+    ////////////отключение увеличения умеьшения в сафари по плюсу и минусу
+     function showChar(e){
+          if (e.charCode == '61' || e.charCode == '45' || e.charCode == '43' || e.charCode == '95')
+          {
+            e.preventDefault(); 
+          }
+          return false;   
+      }
+    ///////////_________
+
+</script>
+<body onkeypress="showChar(event);">
+<div id="main">
+    <div id="overlay">
+        <div id="overlay_opacity">
+        </div>
+        <div id = "leadership" style="">
+            <table style="float: right; border-spacing: 10px;">
+                <tr>
+                    <td style="color: white; text-align: right;"> NAME
+                    </td>
+                    <td style="color: red; text-align: center;"> KILLED
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: white; text-align: center;"> sasdsasdasdasdsssss
+                    </td>
+                    <td style="color: red; text-align: center;">    11312
+                    </td>
+                </tr>
+
+            </table>
+        </div> 
+        <div id="menu">
+            <h1>NOCH</h1>
+
+            <ul class = "input_type_ul">
+                <li class="input_type_li">
+                    <input name="login" id="login__input" placeholder="login" class="input_login">
+                </li>
+                <li class="input_type_li">
+                    <!-- <input name="password" id="password__input" placeholder="password" style="color: white; font-size:20px; width: 85%; height:30px;background-color: #181715;border: 2px grey solid;"> -->
+                    <script type="text/javascript" charset="utf-8">
+                        $(document).ready(function() {
+                            $('#demo').hide();
+                            $('#picker').farbtastic('#btn__go');
+                        });
+                    </script>
+
+                    <form action="" style="width: 400px; z-index: 100;">
+                        <div class="form-item">
+
+                        </div>
+                        <div id="picker"></div>
+
+                    </form>
+
+                   
+                    <div id="btn__go">
+                        <h2>GO</h2>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+</div>
+
+<script type="text/javascript" src="client.js"></script>
+</body>
+<div id="logs"></div>
+</html>

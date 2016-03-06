@@ -712,6 +712,8 @@ Noch.prototype = {
 
     drawPlayers: function() {
         for (var key in this.players) {
+            this.renderingTool.setLineWidth(
+                dataStorage.elementInformation[this.players[key].element].lineWidth);
             var length = (this.players[key].element.split('')).length;
             var radius = dataStorage.elementInformation[this.players[key].element].radius;
             var fontSize = radius * this.letterSizeCoefficient / Math.sqrt(length);

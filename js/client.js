@@ -205,7 +205,7 @@ CollectionBackgroundItem.prototype = {
 
         for (var i = 0; i < this.collectionOfLevels.length; i++) {
             for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
-                this.holdIfGetOut(this.collectionOfLevels[i][j]);
+                //this.holdIfGetOut(this.collectionOfLevels[i][j]);
                 if (deltaPlayerPosition) {
                     this.collectionOfLevels[i][j].tick(deltaPlayerPosition);
                 }
@@ -313,7 +313,7 @@ BackgroundItem.prototype = {
     tick: function (deltaPlayerPosition) {
         this.selfMovie();
         this.playerMovie(deltaPlayerPosition);
-        this.ceilPos();
+        //this.ceilPos();
     }
 };
 
@@ -966,15 +966,14 @@ Noch.prototype = {
 
     run: function() {
 
-        for (var key in this.callbacks) {
-            this.callbacks[key]();
-        }
-
         if (this.background) {
             this.background.tick();
         }
         this.update();
         this.draw();
+        for (var key in this.callbacks) {
+            this.callbacks[key]();
+        }
 
         requestAnimationFrame(this.run.bind(this));
     }

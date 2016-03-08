@@ -762,8 +762,8 @@ Noch.prototype = {
                 var pos2 = dataStorage.scale(objB);
                 this.renderingTool.drawLine(pos1, pos2);
             } else {
-                //bonds.splice(i, 1);
-                console.log('bond failed ' + bonds[i]);
+                this.bonds.splice(i, 1);
+                console.log('bond failed ' + this.bonds[i]);
             }
         }
     },

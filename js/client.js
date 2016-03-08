@@ -583,7 +583,7 @@ var GameWebSocket = function(WS_URL) {
     var self = this;
     this.socket.addEventListener('message', function(event) {
         var data = JSON.parse(event.data);
-        //console.log(data);
+        console.log(data);
         dataStorage.updateInput(data);
         self.processData(data);
     });
@@ -876,7 +876,7 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('np', function(newData) {
-            self.players[newData.id] = new Player(newData.c, newData.e, 2 * Math.PI, newData.p);
+            self.players[newData.np] = new Player(newData.c, newData.e, 2 * Math.PI, newData.p);
         });
 
         this.gameSocket.addGamemechanicsCallBack('ne', function(newData) {

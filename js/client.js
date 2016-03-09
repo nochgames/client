@@ -205,7 +205,7 @@ CollectionBackgroundItem.prototype = {
 
         for (var i = 0; i < this.collectionOfLevels.length; i++) {
             for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
-                //this.holdIfGetOut(this.collectionOfLevels[i][j]);
+                this.holdIfGetOut(this.collectionOfLevels[i][j]);
                 if (deltaPlayerPosition) {
                     this.collectionOfLevels[i][j].tick(deltaPlayerPosition);
                 }

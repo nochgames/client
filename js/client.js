@@ -519,7 +519,8 @@ var dataStorage = (function() {
         },
 
         get mainPlayerPosition() {
-            return mainPlayer.position;
+            if (mainPlayer)
+                return mainPlayer.position;
         },
 
         get outputData() {
@@ -583,7 +584,7 @@ var GameWebSocket = function(WS_URL) {
     var self = this;
     this.socket.addEventListener('message', function(event) {
         var data = JSON.parse(event.data);
-        console.log(data);
+        //console.log(data);
         dataStorage.updateInput(data);
         self.processData(data);
     });
@@ -609,10 +610,12 @@ var GameWebSocket = function(WS_URL) {
 
     this.socket.addEventListener('close', function() {
         console.log("Connection closed");
+        alert("Connection closed");
     });
 
     this.socket.addEventListener('error', function(error) {
         console.log("Connection error " + error.message);
+        alert("Connection error");
     });
 };
 
@@ -743,8 +746,12 @@ Noch.prototype = {
         this.renderingTool.setLineWidth(dataStorage.bondWidth);
         this.renderingTool.setStrokeColor('white');
 
-        for (var i = 0; i < this.bonds.length; ++i) {
-            var objA, objB;
+        var i = this.bonds.length;
+        var objA, objB;
+
+        while (i--) {
+            objA = null;
+            objB = null;
 
             if (this.players[this.bonds[i].idA]) {
                 objA = this.toPlayerCS(this.players[this.bonds[i].idA].position);
@@ -760,6 +767,7 @@ Noch.prototype = {
             if (objA && objB) {
                 var pos1 = dataStorage.scale(objA);
                 var pos2 = dataStorage.scale(objB);
+
                 this.renderingTool.drawLine(pos1, pos2);
             } else {
                 this.bonds.splice(i, 1);

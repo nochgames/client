@@ -901,7 +901,7 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('che', function(newData) {
-            var object = self.garbageAll[newData.che] ? self.garbageAll[newData.che] : players[newData.che];
+            var object = self.garbageAll[newData.che] ? self.garbageAll[newData.che] : self.players[newData.che];
             object.element = newData.e;
         });
 

@@ -930,7 +930,9 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('b1', function(newData) {
-            self.bonds.push({ idA: newData.b1, idB: newData.b2 });
+            if (self.bonds.indexOf({ idA: newData.b1, idB: newData.b2 }) == -1) {
+                self.bonds.push({ idA: newData.b1, idB: newData.b2 });
+            }
         });
 
         this.gameSocket.addGamemechanicsCallBack('db1', function(newData) {

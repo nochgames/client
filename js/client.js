@@ -934,13 +934,14 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('db1', function(newData) {
-            var id = -1;
-            for (var i = 0; i < self.bonds.length; ++i) {
+
+            var i = self.bonds.length;
+
+            while (i--) {
                 if (self.bonds[i].idA == newData.db1 && self.bonds[i].idB == newData.db2) {
-                    id = i;
+                    self.bonds.splice(i, 1);
                 }
             }
-            if (id != -1) self.bonds.splice(id, 1);
         });
 
         this.gameSocket.addGamemechanicsCallBack('gba', function(newData) {

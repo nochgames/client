@@ -445,7 +445,9 @@ var dataStorage = (function() {
         "p": { radius: 0.0073 * longDimension * coefficient,
             lineWidth: 0 },
         "n": { radius: 0.0073 * longDimension * coefficient,
-            lineWidth: 0 }
+            lineWidth: 0 },
+        "ph": { radius: 0.0073 * longDimension * coefficient,
+            lineWidth: 0 },
     };
 
 
@@ -818,11 +820,11 @@ Noch.prototype = {
         var self = this;
         document.addEventListener('keydown', function(event) {
             if (event.keyCode == 32) {
-                self.shoot(event, "p");
+                self.shoot(event, "ph");
             }
-            if (event.keyCode == 78) {
+            /*if (event.keyCode == 78) {
                 self.shoot(event, "n");
-            }
+            }*/
         });
     },
 

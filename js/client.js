@@ -852,14 +852,6 @@ Noch.prototype = {
     configureSocket: function() {
         var self = this;
 
-        this.gameSocket.addGamemechanicsCallBack('players', function(newData) {
-            for (var i = 0; i < newData.players.length; i += 3) {
-                if(!self.players[newData.players[i]]) console.log(newData.players[i]);
-                self.players[newData.players[i]].position.x = newData.players[i + 1];
-                self.players[newData.players[i]].position.y = newData.players[i + 2];
-            }
-        });
-
         this.gameSocket.addGamemechanicsCallBack('coefficient', function(newData) {
             dataStorage.setTargetCoefficient(newData.coefficient);
         });
@@ -949,6 +941,12 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('gba', function(newData) {
+            for (var i = 0; i < newData.players.length; i += 3) {
+                if(!self.players[newData.players[i]]) console.log(newData.players[i]);
+                self.players[newData.players[i]].position.x = newData.players[i + 1];
+                self.players[newData.players[i]].position.y = newData.players[i + 2];
+            }
+
             for (var i = 0; i < newData.gba.length; i += 3) {
                 if (self.garbageAll[newData.gba[i]]) {
                     self.garbageAll[newData.gba[i]].setPosition({ x: newData.gba[i + 1], y: newData.gba[i + 2]});

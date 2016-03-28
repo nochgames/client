@@ -14,15 +14,13 @@
 <body onkeypress="showChar(event);">
 <div id="main">
     <div id="overlay">
-        
-
         <div id="overlay_opacity">
         </div>
        
         <div id="menu">
             <h1>NOCH</h1>
             <img height="80" style="position: absolute; top: 165px; right: -5px;z-index: 2;" id="try_more" src="assets/try_more.png"> </img>
-            <a href="http://nochgames.ru/we/"><img style="position: absolute; top: 161px; right: 58px;z-index: 2;" id="garage" src="garage/(1).png"> </img> </a>
+            <a href="https://vk.com/id55041164"><img style="position: absolute; top: 161px; right: 58px;z-index: 2;" id="garage" src="garage/(1).png"> </img> </a>
             <ul class = "input_type_ul">
                 <li class="input_type_li">
                     <input name="login" id="login__input" placeholder="login" class="input_login">
@@ -44,7 +42,7 @@
 
                     </form>
 
-                    
+                   
                     <div id="btn__go">
                         <h2>GO</h2>
                     </div>
@@ -53,81 +51,63 @@
         </div>
     </div>
      <div id = "leadership" style="font-family: Nevis;">
-            <table id = "leader_ship_table" style="float: right; border-spacing: 10px;">
+            <table style="float: right; border-spacing: 10px;">
                 <tr>
-                    <td class="leadership_table_td_name"> NAME
+                    <td style="color: white; text-align: right;"> NAME
                     </td>
-                    <td class="leadership_table_td_kills"> KILLED
+                    <td style="color: red; text-align: center;"> KILLED
                     </td>
                 </tr>
-               
+                <tr>
+                    <td style="color: white; text-align: center;"> Mi ka
+                    </td>
+                    <td style="color: red; text-align: center;">    11312
+                    </td>
+                </tr>
 
             </table>
     </div> 
-    <div id = "dead"> <img src="dead/(1).png"> </img> </div>
     <div id ="help"> </div>
     <canvas id="canvas"></canvas>
 </div>
 
 <script type="text/javascript" src="client.js"></script>
 <script>   
-    function reload_table(ar){
-        var table = document.getElementById("leader_ship_table");
-        for (var i=0; i<ar.length;i++){
-            var tr = document.createElement('tr');
-            var td1 = document.createElement('td');
-            var td2 = document.createElement('td');
-            td1.innerHTML = ar[i].name;
-            td2.innerHTML = ar[i].kills;
-            td1.className = "leadership_table_td_name";
-            td2.className = "leadership_table_td_kills";
-            tr.appendChild(td1);
-            tr.appendChild(td2);
-            table.appendChild(tr);
-        }
-    }
     //_______________анимация кнопки для гаража и подсказки купить атом чтоб мы получили бабки
     $( document ).ready(function() {
          function animation(){
             //alert(tick);
-            $("#garage").attr("src","garage/(" + (tick % 100 + 1) + ").png");
+            //$("#garage").attr("src","garage/(" + (tick % 100 + 1) + ").png");
             //console.log("garage/(" + (tick % 100 + 1) + ").png")
-            //   arr[tick % 100].style.display = "block";
-            // var prev = tick % 100 - 1;
-            // if (tick % 100 == 0) prev = 99;
-            // arr[prev].style.display = "none";
-            console.log(tick % 100);
+              arr[tick % 100].style.display = "block";
+            var prev = tick % 100 - 1;
+            if (tick % 100 == 0) prev = 99;
+            arr[prev].style.display = "none";
+            //console.log(tick % 100);
             tick++;
             if (!animate){
                return; 
             }
-            //requestAnimationFrame(animation);
+            requestAnimationFrame(animation);
             
         }
         function handlerIn(){ 
             //intervalID = setInterval(animation,30);
-<<<<<<< HEAD
             
             animate = !animate;
             requestId = requestAnimationFrame(animation);
           
 
-=======
-            //animate = !animate;
-            //requestId = requestAnimationFrame(animation);
-            Game.addCallback('button', animation);
->>>>>>> upstream/dev
 
         }
         function handlerOut(){
             //clearInterval(intervalID);
-<<<<<<< HEAD
             var prev = tick % 100 - 1;
             if (tick % 100 == 0) prev = 99;
-            // arr[tick % 100].style.display = "none";
-            // arr[tick % 100-1].style.display = "none";
-            // arr[0].style.display = "block";
-            // arr[prev].style.display = "none";
+            arr[tick % 100].style.display = "none";
+            arr[tick % 100-1].style.display = "none";
+            arr[0].style.display = "block";
+            arr[prev].style.display = "none";
 
              cancelAnimationFrame(requestId);
              animate = !animate;
@@ -136,29 +116,19 @@
             // $("#garage").attr("src","garage/(1).png");
              $("#try_more").hide(200);
             
-=======
-            /*cancelAnimationFrame(requestId);
-            animate = !animate;
-            */
-            Game.removeCallback('button');
-            tick = 0;
-            $("#garage").attr("src","garage/(1).png");
-            $("#try_more").hide(200);
-           
->>>>>>> upstream/dev
         }
         //новый код
-        // var arr = [];
-        // for (var i=0;i<100;i++){
-        //     var img = document.createElement('img');
-        //     img.className = "garage_img";
-        //     img.src = "garage/(" + (i+1) + ").png";
-        //     img.style.display = "none";
-        //     var relative = document.getElementById('menu');
-        //     relative.appendChild(img);
-        //     arr.push(img);
-        // }
-        // arr[0].style.display = "block";
+        var arr = [];
+        for (var i=0;i<100;i++){
+            var img = document.createElement('img');
+            img.className = "garage_img";
+            img.src = "garage/(" + (i+1) + ").png";
+            img.style.display = "none";
+            var relative = document.getElementById('menu');
+            relative.appendChild(img);
+            arr.push(img);
+        }
+        arr[0].style.display = "block";
         /////
         var tick = 0,animate = false;
         var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
@@ -166,30 +136,17 @@
         window.requestAnimationFrame = requestAnimationFrame;
         var requestId;
         $("#garage").hover( handlerIn, handlerOut );
-
-        ////
-        var obj1 = {
-            name: "value0",
-            kills: 126,
-        }
-        var obj2 = {
-            name: "value1",
-            kills: 125,
-        }
-        var empty =[];
-        empty.push(obj1,obj2);
-        reload_table(empty);
         
         //var intervalID;
         //fly_faster();
-        // var a = new GameHelp();
-        // a.flyFaster("ru",250);
-        // $(window).keypress(function (e) {
-        //   if (e.keyCode === 0 || e.keyCode === 32) {
-        //     e.preventDefault()
-        //     a.hideHelp(function() { a.dontDie("ru",250); });
-        //   }
-        // })
+        var a = new GameHelp();
+        a.flyFaster("ru",250);
+        $(window).keypress(function (e) {
+          if (e.keyCode === 0 || e.keyCode === 32) {
+            e.preventDefault()
+            a.hideHelp(function() { a.dontDie("ru",250); });
+          }
+        })
         
         //a.hideHelp();
     });
@@ -201,7 +158,6 @@
           }
           return false;   
       }
-
       
 
 </script>

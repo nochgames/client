@@ -217,14 +217,11 @@ CollectionBackgroundItem.prototype = {
     holdIfGetOut: function (itemBackground) {
         if (itemBackground.position.x <= - dataStorage.size.width / 4) {
             itemBackground.position.x += 3 / 2 * dataStorage.size.width;
-        }
-        if (itemBackground.position.x >= dataStorage.size.width * 5 / 4) {
+        } else if (itemBackground.position.x >= dataStorage.size.width * 5 / 4) {
             itemBackground.position.x -= 3 / 2 * dataStorage.size.width;
-        }
-        if (itemBackground.position.y <= - dataStorage.size.height / 4) {
+        } else if (itemBackground.position.y <= - dataStorage.size.height / 4) {
             itemBackground.position.y += 3 / 2 * dataStorage.size.height;
-        }
-        if (itemBackground.position.y >= dataStorage.size.height * 5 / 4) {
+        } else if (itemBackground.position.y >= dataStorage.size.height * 5 / 4) {
             itemBackground.position.y -= 3 / 2 * dataStorage.size.height;
         }
     },
@@ -317,7 +314,7 @@ BackgroundItem.prototype = {
     tick: function (deltaPlayerPosition) {
         this.selfMovie();
         this.playerMovie(deltaPlayerPosition);
-        this.ceilPos();
+        //this.ceilPos();
     }
 };
 
@@ -449,7 +446,9 @@ var dataStorage = (function() {
         "p": { radius: 0.0073 * longDimension * coefficient,
             lineWidth: 0 },
         "n": { radius: 0.0073 * longDimension * coefficient,
-            lineWidth: 0 }
+            lineWidth: 0 },
+        "ph": { radius: 0.0073 * longDimension * coefficient,
+            lineWidth: 0 },
     };
 
 
@@ -523,7 +522,8 @@ var dataStorage = (function() {
         },
 
         get mainPlayerPosition() {
-            return mainPlayer.position;
+            if (mainPlayer)
+                return mainPlayer.position;
         },
 
         get outputData() {
@@ -613,10 +613,12 @@ var GameWebSocket = function(WS_URL) {
 
     this.socket.addEventListener('close', function() {
         console.log("Connection closed");
+        alert("Connection closed");
     });
 
     this.socket.addEventListener('error', function(error) {
         console.log("Connection error " + error.message);
+        alert("Connection error");
     });
 };
 
@@ -672,6 +674,7 @@ Garbage.prototype = {
 
 var Noch = function(WS_URL, renderingTool) {
 
+    this.callbacks = {};
     this.started = false;
     this.players = {};
     this.border = [];
@@ -685,6 +688,14 @@ var Noch = function(WS_URL, renderingTool) {
 };
 
 Noch.prototype = {
+
+    addCallback: function(key, callback) {
+        this.callbacks[key] = callback;
+    },
+
+    removeCallback: function(key) {
+        delete this.callbacks[key];
+    },
 
     drawGarbage: function() {
 
@@ -700,7 +711,6 @@ Noch.prototype = {
 
             var pos = dataStorage.scale(this.toPlayerCS(this.garbageAll[key].position));
 
-            console.log(pos.x);
             this.drawElement(pos.x, pos.y, radius, this.garbageAll[key].color);
             this.drawLetter(pos.x, pos.y, fontSize, element, radius, length);
         }
@@ -708,6 +718,8 @@ Noch.prototype = {
 
     drawPlayers: function() {
         for (var key in this.players) {
+            this.renderingTool.setLineWidth(
+                dataStorage.elementInformation[this.players[key].element].lineWidth);
             var length = (this.players[key].element.split('')).length;
             var radius = dataStorage.elementInformation[this.players[key].element].radius;
             var fontSize = radius * this.letterSizeCoefficient / Math.sqrt(length);
@@ -737,8 +749,12 @@ Noch.prototype = {
         this.renderingTool.setLineWidth(dataStorage.bondWidth);
         this.renderingTool.setStrokeColor('white');
 
-        for (var i = 0; i < this.bonds.length; ++i) {
-            var objA, objB;
+        var i = this.bonds.length;
+        var objA, objB;
+
+        while (i--) {
+            objA = null;
+            objB = null;
 
             if (this.players[this.bonds[i].idA]) {
                 objA = this.toPlayerCS(this.players[this.bonds[i].idA].position);
@@ -754,10 +770,11 @@ Noch.prototype = {
             if (objA && objB) {
                 var pos1 = dataStorage.scale(objA);
                 var pos2 = dataStorage.scale(objB);
+
                 this.renderingTool.drawLine(pos1, pos2);
             } else {
-                //bonds.splice(i, 1);
-                console.log('bond failed ' + bonds[i]);
+                this.bonds.splice(i, 1);
+                console.log('bond failed ' + this.bonds[i]);
             }
         }
     },
@@ -804,11 +821,11 @@ Noch.prototype = {
         var self = this;
         document.addEventListener('keydown', function(event) {
             if (event.keyCode == 32) {
-                self.shoot(event, "p");
+                self.shoot(event, "ph");
             }
-            if (event.keyCode == 78) {
+            /*if (event.keyCode == 78) {
                 self.shoot(event, "n");
-            }
+            }*/
         });
     },
 
@@ -836,14 +853,6 @@ Noch.prototype = {
     configureSocket: function() {
         var self = this;
 
-        this.gameSocket.addGamemechanicsCallBack('players', function(newData) {
-            for (var i = 0; i < newData.players.length; i += 3) {
-                if(!self.players[newData.players[i]]) console.log(newData.players[i]);
-                self.players[newData.players[i]].position.x = newData.players[i + 1];
-                self.players[newData.players[i]].position.y = newData.players[i + 2];
-            }
-        });
-
         this.gameSocket.addGamemechanicsCallBack('coefficient', function(newData) {
             dataStorage.setTargetCoefficient(newData.coefficient);
         });
@@ -870,7 +879,7 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('np', function(newData) {
-            self.players[newData.id] = new Player(newData.c, newData.e, 2 * Math.PI, newData.p);
+            self.players[newData.np] = new Player(newData.c, newData.e, 2 * Math.PI, newData.p);
         });
 
         this.gameSocket.addGamemechanicsCallBack('ne', function(newData) {
@@ -887,7 +896,7 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('che', function(newData) {
-            var object = self.garbageAll[newData.che] ? self.garbageAll[newData.che] : players[newData.che];
+            var object = self.garbageAll[newData.che] ? self.garbageAll[newData.che] : self.players[newData.che];
             object.element = newData.e;
         });
 
@@ -916,20 +925,29 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('b1', function(newData) {
-            self.bonds.push({ idA: newData.b1, idB: newData.b2 });
+            if (self.bonds.indexOf({ idA: newData.b1, idB: newData.b2 }) == -1) {
+                self.bonds.push({ idA: newData.b1, idB: newData.b2 });
+            }
         });
 
         this.gameSocket.addGamemechanicsCallBack('db1', function(newData) {
-            var id = -1;
-            for (var i = 0; i < self.bonds.length; ++i) {
+
+            var i = self.bonds.length;
+
+            while (i--) {
                 if (self.bonds[i].idA == newData.db1 && self.bonds[i].idB == newData.db2) {
-                    id = i;
+                    self.bonds.splice(i, 1);
                 }
             }
-            if (id != -1) self.bonds.splice(id, 1);
         });
 
         this.gameSocket.addGamemechanicsCallBack('gba', function(newData) {
+            for (var i = 0; i < newData.players.length; i += 3) {
+                if(!self.players[newData.players[i]]) console.log(newData.players[i]);
+                self.players[newData.players[i]].position.x = newData.players[i + 1];
+                self.players[newData.players[i]].position.y = newData.players[i + 2];
+            }
+
             for (var i = 0; i < newData.gba.length; i += 3) {
                 if (self.garbageAll[newData.gba[i]]) {
                     self.garbageAll[newData.gba[i]].setPosition({ x: newData.gba[i + 1], y: newData.gba[i + 2]});
@@ -965,6 +983,9 @@ Noch.prototype = {
         }
         this.update();
         this.draw();
+        for (var key in this.callbacks) {
+            this.callbacks[key]();
+        }
 
         requestAnimationFrame(this.run.bind(this));
     }

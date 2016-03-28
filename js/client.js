@@ -56,7 +56,8 @@ $('#btn__go').click(function(){
     //alert(rgb_new);
     $("#btn__go").css("background-color",rgb_new);
     //alert($("#btn__go").css("background-color"));
-    Game.addMainPlayer(login__input, rgb_new);
+    alert(login__input);
+    Game.addMainPlayer(login__input.css("innerHTML"), rgb_new);
 });
 
 /*

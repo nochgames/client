@@ -59,9 +59,13 @@ GameHelp.prototype = {
     },
 
 
-    hideHelp: function(func){
-    	$(this.layout).hide(1000,func);
-    }
+	changeHelp: function(func){
+		$(this.layout).hide(1000,func);
+	},
+
+	hideHelp: function(func){
+		$(this.layout).hide(1000);
+	}
 
 };
 

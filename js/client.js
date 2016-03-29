@@ -56,7 +56,8 @@ $('#btn__go').click(function(){
     //alert(rgb_new);
     $("#btn__go").css("background-color",rgb_new);
     //alert($("#btn__go").css("background-color"));
-    Game.addMainPlayer(login__input, rgb_new);
+    console.log(login__input);
+    Game.addMainPlayer(login__input.val(), rgb_new);
 });
 
 /*
@@ -447,7 +448,7 @@ var dataStorage = (function() {
         "n": { radius: 0.0073 * longDimension * coefficient,
             lineWidth: 0 },
         "ph": { radius: 0.0073 * longDimension * coefficient,
-            lineWidth: 0 },
+            lineWidth: 0 }
     };
 
 
@@ -679,14 +680,22 @@ var Noch = function(WS_URL, renderingTool) {
     this.border = [];
     this.bonds = [];
     this.garbageAll = {};
-    this.gameSocket = new GameWebSocket(WS_URL);
-    this.configureSocket();
     this.renderingTool = renderingTool;
-
+    this.wsUrl = WS_URL;
+    this.addSocket();
     this.letterSizeCoefficient = 1.5;
 };
 
 Noch.prototype = {
+
+    addSocket: function() {
+        this.gameSocket = new GameWebSocket(this.wsUrl);
+        this.configureSocket();
+    },
+
+    removeSocket: function() {
+        delete this.gameSocket;
+    },
 
     addCallback: function(key, callback) {
         this.callbacks[key] = callback;
@@ -903,18 +912,22 @@ Noch.prototype = {
             self.garbageAll[newData.ng] = new Garbage(newData.p, newData.e, newData.av);
         });
 
+        this.gameSocket.addGamemechanicsCallBack('sb', function(newData) {
+            reload_table(newData.sb);
+        });
+
         this.gameSocket.addGamemechanicsCallBack('nb', function(newData) {
             self.border.push({ position: newData.p, angle: newData.a });
         });
 
         this.gameSocket.addGamemechanicsCallBack('gbav', function(newData) {
-            if(self.garbageAll[newData.gbav].color != 'white') {
+            if(self.garbageAll[newData.gbav] && self.garbageAll[newData.gbav].color != 'white') {
                 self.garbageAll[newData.gbav].color = 'green';
             }
         });
 
         this.gameSocket.addGamemechanicsCallBack('gbnav', function(newData) {
-            if(self.garbageAll[newData.gbnav].color != 'white') {
+            if(self.garbageAll[newData.gbnav] && self.garbageAll[newData.gbnav].color != 'white') {
                 self.garbageAll[newData.gbnav].color = 'grey';
             }
         });
@@ -941,10 +954,12 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('gba', function(newData) {
-            for (var i = 0; i < newData.players.length; i += 3) {
-                if(!self.players[newData.players[i]]) console.log(newData.players[i]);
-                self.players[newData.players[i]].position.x = newData.players[i + 1];
-                self.players[newData.players[i]].position.y = newData.players[i + 2];
+            if (newData.players && newData.players.length) {
+                for (var i = 0; i < newData.players.length; i += 3) {
+                    if(!self.players[newData.players[i]]) console.log(newData.players[i]);
+                    self.players[newData.players[i]].position.x = newData.players[i + 1];
+                    self.players[newData.players[i]].position.y = newData.players[i + 2];
+                }
             }
 
             for (var i = 0; i < newData.gba.length; i += 3) {

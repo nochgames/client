@@ -56,7 +56,7 @@ $('#btn__go').click(function(){
     //alert(rgb_new);
     $("#btn__go").css("background-color",rgb_new);
     //alert($("#btn__go").css("background-color"));
-    Game.addMainPlayer(login__input, rgb_new);
+    Game.addMainPlayer(login__input.val(), rgb_new);
 });
 
 /*
@@ -281,8 +281,8 @@ CollectionBackgroundItem.prototype = {
 };
 
 function BackgroundItem(position, src, coefForMove) {
-    var MAX_VELOCITY = 0.3,
-        MAX_RAD_VELOCITY = 0.5,
+    var MAX_VELOCITY = 0.1,
+        MAX_RAD_VELOCITY = 0.2,
         image;
     this.position = position;
     this.velocity = {

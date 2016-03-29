@@ -2,97 +2,32 @@
 <html>
 <head>
     <title>N-o-C-H</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="/style.css">
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script type="text/javascript" src="farbtastic.js"></script>
     <script src="lib/easeljs-0.8.2.min.js"></script>
     <script src="https://code.createjs.com/preloadjs-0.6.2.min.js"></script>
     <script type="text/javascript" src="help.js"></script>
+    <script type="text/javascript" src="hover_animation.js"></script>
+    <script type="text/javascript" src="simple_animation.js"></script>
 </head>
 <style>
-    .farbtastic {
-        position: relative;margin-left: 4%; margin-top: 10px;
-    }
-    .farbtastic * {
-        position: absolute;
-        cursor: crosshair;
-    }
-    .farbtastic, .farbtastic .wheel {
-        width: 195px;
-        height: 195px;
-    }
-    .farbtastic .color, .farbtastic .overlay {
-        top: 49px;
-        left: 47px;
-        width: 100px;
-        height:100px;
-    }
-    .farbtastic .wheel {
-        background: url(../picker/wheel.png) no-repeat;
-        width: 195px;
-        height: 195px;
-    }
-    .farbtastic .overlay {
-        background: url(../picker/mask.png) no-repeat;
-    }
-    .farbtastic .marker {
-        width: 17px;
-        height: 17px;
-        margin: -8px 0 0 -8px;
-        overflow: hidden;
-        background: url(../picker/marker.png) no-repeat;
-    }
-
-    img{
-        float:left;
-        width: 20%;
-    }
-    .menu_selection{
-        width: 100%;
-        height: 100%;
-    // background-color: #120B05;
-
-    }
-    #game_menu{
-        padding-top:6px;padding-bottom:6px;
-
-    }
-    .select_div{
-        float:left;  width: 75%;
-        position: relative;
-        left: 2%;
-        //border: 2px #000 solid;
-        background-size: contain;
-    }
-    .select_div select {
-        margin: 0;
-        font: bold 20px tellural_altbold;
-        background-color: #18180a;
-        background-image: url(../assets/123_dlinny.png) ;
-        background-position:  right ;
-        background-repeat: no-repeat;
-        //background:  ;//background-color: transparent;
-       background-size: cover;
-        -webkit-appearance: none; border: none;
-        color: #fff;   outline:none;
-        -moz-appearance:none;
-        appearance:none; z-index: 20;
-        cursor:pointer;
-
-
-    }
-    
 </style>
 <body onkeypress="showChar(event);">
 <div id="main">
     <div id="overlay">
+        
+
         <div id="overlay_opacity">
         </div>
        
         <div id="menu">
             <h1>NOCH</h1>
             <img height="80" style="position: absolute; top: 165px; right: -5px;z-index: 2;" id="try_more" src="assets/try_more.png"> </img>
-            <a href="https://vk.com/id55041164"><img style="position: absolute; top: 161px; right: 58px;z-index: 2;" id="garage" src="garage/(1).png"> </img> </a>
+            <a  id="garage_ref" href="http://nochgames.ru/we/">
+               <!--Animation -->
+            </a>
             <ul class = "input_type_ul">
                 <li class="input_type_li">
                     <input name="login" id="login__input" placeholder="login" class="input_login">
@@ -114,7 +49,7 @@
 
                     </form>
 
-                   
+                    
                     <div id="btn__go">
                         <h2>GO</h2>
                     </div>
@@ -123,68 +58,100 @@
         </div>
     </div>
      <div id = "leadership" style="font-family: Nevis;">
-            <table style="float: right; border-spacing: 10px;">
-                <tr>
-                    <td style="color: white; text-align: right;"> NAME
-                    </td>
-                    <td style="color: red; text-align: center;"> KILLED
-                    </td>
-                </tr>
-                <tr>
-                    <td style="color: white; text-align: center;"> sasdsasdasdasdsssss
-                    </td>
-                    <td style="color: red; text-align: center;">    11312
-                    </td>
-                </tr>
+            <table id = "leader_ship_table" style="float: right; border-spacing: 10px;">
+               
+               
 
             </table>
     </div> 
+    <div id = "dead" style="position: absolute; left:50%; margin-left: -180px; top: 30%; height: 300px; width: 300px;"> 
+    <!--Death animation-->
+    </div>
     <div id ="help"> </div>
     <canvas id="canvas"></canvas>
 </div>
 
 <script type="text/javascript" src="client.js"></script>
 <script>   
+    var death_pic = [];
+    function deleteRows(table) {
+        var inputs = table.getElementsByTagName("input");
+        var i = inputs.length;
+        while (i--) {
+            var input = inputs[i];
+            if (input.checked == true) {
+                var tr = input.parentNode;
+                table.deleteRow(tr.rowIndex);
+            }
+        }
+    }
+
+    function reload_table(ar){
+        var table = document.getElementById("leader_ship_table");
+        
+         while(table.childNodes.length){
+             table.removeChild(table.childNodes[0]);
+         }
+        for (var i=-1; i<ar.length;i++){
+            var tr = document.createElement('tr');
+            var td1 = document.createElement('td');
+            var td2 = document.createElement('td');
+            if (i == -1) {
+                td1.innerHTML = "NAME";
+                td2.innerHTML = "KILLS";
+            } else {
+                td1.innerHTML = ar[i].name;
+                td2.innerHTML = ar[i].kills;
+            }
+            td1.className = "leadership_table_td_name";
+            td2.className = "leadership_table_td_kills";
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            table.appendChild(tr);
+        }
+    }
     //_______________анимация кнопки для гаража и подсказки купить атом чтоб мы получили бабки
     $( document ).ready(function() {
-         function animation(){
-            //alert(tick);
-            $("#garage").attr("src","garage/(" + (tick % 100 + 1) + ").png");
-            //console.log("garage/(" + (tick % 100 + 1) + ").png")
-            tick++;
-            if (!animate){
-               return; 
-            }
-            //requestAnimationFrame(animation);
+        //картинки для гаража
+        var arr = [];
+        for (var i=0;i<100;i++){
+            var img = document.createElement('img');
+            //img.className = "garage_img";
+            img.src = "garage/(" + (i+1) + ").png";
+            img.style.display = "none";
+            img.style.position = "absolute";
+            img.style.top = "161px";
+            img.style.right = "59px";
+            img.style.zIndex = 3;
+            var relative = document.getElementById('garage_ref');
+            relative.appendChild(img);
+            arr.push(img);
             
         }
-        function handlerIn(){ 
-            //alert("in");
-            //intervalID = setInterval(animation,30);
-            //animate = !animate;
-            //requestId = requestAnimationFrame(animation);
-            Game.addCallback('button', animation);
-
+        arr[0].style.display = "block";
+        ///картнки для смерти
+        var arr2 = [];
+        for (var i=0;i<70;i++){
+            var img = document.createElement('img');
+            //img.className = "garage_img";
+            img.src = "dead/" + i + ".png";
+            img.style.display = "none";
+            img.style.zIndex = 3;
+            img.style.width = "100%";
+            if (i == 69) {
+                img.id = "last_for_close_dead_window";
+            }
+            var relative = document.getElementById('dead');
+            relative.appendChild(img);
+            arr2.push(img);
+            
         }
-        function handlerOut(){
-            //clearInterval(intervalID);
-            /*cancelAnimationFrame(requestId);
-            animate = !animate;
-            */
-            Game.removeCallback('button');
-            tick = 0;
-            $("#garage").attr("src","garage/(1).png");
-            $("#try_more").hide(200);
-           
-        }
-        var tick = 0,animate = false;
-        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-        window.requestAnimationFrame = requestAnimationFrame;
-        var requestId;
-        $("#garage").hover( handlerIn, handlerOut );
-        //var intervalID;
-        fly_faster();
+        
+        ///
+        death_pic = arr2;
+        hover_animation(arr,100);
+        // simple_animation(death_pic,70);
+        
     });
      //______отключение увеличения умеьшения в сафари по плюсу и минусу
      function showChar(e){

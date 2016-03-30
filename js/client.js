@@ -111,6 +111,23 @@ RendererCanvas.prototype = {
         this.ctx.fill();
     },
 
+    drawCircle2Colors: function(x, y, radius, color1, color2, angle) {
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = color1;
+        this.ctx.arc(x, y, radius, - Math.PI / 2, angle - Math.PI / 2);
+        this.ctx.stroke();
+        this.ctx.closePath();
+        this.ctx.strokeStyle = color2;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, angle - Math.PI / 2, 2 * Math.PI - Math.PI / 2);
+        this.ctx.stroke();
+        this.ctx.closePath();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        this.ctx.fill();
+        this.ctx.closePath();
+    },
+
     printText: function(x, y, font, text) {
         this.ctx.font = font;
         this.ctx.fillText(text, x, y);
@@ -158,7 +175,7 @@ Background.prototype = {
 
 var CollectionBackgroundItem = function () {
     this.collectionOfLevels = [ [], [], [], [] ];
-    this.densityOfLevel = [60000, 100000, 240000, 60000];
+    this.densityOfLevel = [60000, 100000, 60000, 60000];
     this.coefForMovie = [0.8, 0.5, 0.2, 0.1];
     this.fillingArea(- dataStorage.size.width / 4, - dataStorage.size.height / 4,
                         dataStorage.size.width * 5 / 4, dataStorage.size.height * 5 / 4);
@@ -175,8 +192,8 @@ CollectionBackgroundItem.prototype = {
                     prefix: "2layer/",
                     count: 35
                 }, {
-                    prefix: "1layer/",
-                    count: 30
+                    prefix: "1layer/q",
+                    count: 29
                 }, {
                     prefix: "clouds/",
                     count: 29
@@ -342,8 +359,8 @@ DrawManager.prototype = {
                     prefix: "2layer/",
                     count: 35
                 }, {
-                    prefix: "1layer/",
-                    count: 30
+                    prefix: "1layer/q",
+                    count: 29
                 }, {
                     prefix: "clouds/",
                     count: 29
@@ -613,12 +630,12 @@ var GameWebSocket = function(WS_URL) {
 
     this.socket.addEventListener('close', function() {
         console.log("Connection closed");
-        alert("Connection closed");
+        //alert("Connection closed");
     });
 
     this.socket.addEventListener('error', function(error) {
         console.log("Connection error " + error.message);
-        alert("Connection error");
+        //alert("Connection error");
     });
 };
 
@@ -649,6 +666,30 @@ var Player = function(color, element, angle, position) {
     this.element = element;
     this.angle = angle;
     this.position = position;
+    this.indicatorAngle = 0;
+    this.isInProgress = false;
+    this.step = Math.PI * 2 / 60 / 4.4;
+};
+
+Player.prototype = {
+
+    startIndicator: function() {
+        this.isInProgress = true;
+        this.indicatorAngle = 2 * Math.PI;
+    },
+
+    getIndicatorAngle: function() {
+        if (this.isInProgress) {
+            if (this.indicatorAngle <= 0) {
+                this.isInProgress = false;
+                this.indicatorAngle = 0;
+            } else {
+                return this.indicatorAngle -= this.step;
+            }
+        } else {
+            return this.indicatorAngle;
+        }
+    }
 };
 
 var Garbage = function(position, element, color) {
@@ -733,7 +774,8 @@ Noch.prototype = {
             var fontSize = radius * this.letterSizeCoefficient / Math.sqrt(length);
             var pos = dataStorage.scale(this.toPlayerCS(this.players[key].position));
 
-            this.drawElement(pos.x, pos.y, radius, this.players[key].color, this.players[key].element);
+            this.drawPlayer(pos.x, pos.y, radius, this.players[key].color, this.players[key].getIndicatorAngle());
+            //this.drawElement(pos.x, pos.y, radius, this.players[key].color, this.players[key].element);
             this.drawLetter(pos.x, pos.y, fontSize, this.players[key].element, radius, length);
             //this.indicatorProton.draw (pos.x, pos.y,
             // radiuses[players[key].element], ctx);
@@ -791,6 +833,11 @@ Noch.prototype = {
         this.renderingTool.setFillStyle('black');
         this.renderingTool.setStrokeColor(color);
         this.renderingTool.drawCircle(x, y, radius);
+    },
+
+    drawPlayer: function(x, y, radius, color, angle) {
+        this.renderingTool.setFillStyle('black');
+        this.renderingTool.drawCircle2Colors(x, y, radius, "grey", color, angle);
     },
 
     drawLetter: function(x, y, fontSize, letter, radius, length) {
@@ -868,6 +915,7 @@ Noch.prototype = {
         this.gameSocket.addGamemechanicsCallBack('sid', function(newData) {
             self.mainPlayer = new Player(newData.c, newData.e, 2 * Math.PI, dataStorage.mainPlayerPosition);
             dataStorage.setMainPlayer(self.mainPlayer);
+            self.mainPlayer.sid = newData.sid;
             self.players[newData.sid] = self.mainPlayer;
         });
 
@@ -899,12 +947,16 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('dp', function(newData) {
-            console.log('player died ' + newData.dp);
-            delete self.players[newData.dp];
+            if (newData.dp != self.mainPlayer.sid) {
+                console.log('player died ' + newData.dp);
+                delete self.players[newData.dp];
+            }
+
         });
 
         this.gameSocket.addGamemechanicsCallBack('dead', function(newData) {
-            alert("you're dead lol");
+            //alert("you're dead lol");
+            simple_animation(death_pic,70);
         });
 
         this.gameSocket.addGamemechanicsCallBack('che', function(newData) {
@@ -916,6 +968,12 @@ Noch.prototype = {
 
         this.gameSocket.addGamemechanicsCallBack('ng', function(newData) {
             self.garbageAll[newData.ng] = new Garbage(newData.p, newData.e, newData.av);
+        });
+
+        this.gameSocket.addGamemechanicsCallBack('shph', function(newData) {
+            if (self.players[newData.shph]) {
+                self.players[newData.shph].startIndicator();
+            }
         });
 
         this.gameSocket.addGamemechanicsCallBack('sb', function(newData) {
@@ -1022,105 +1080,3 @@ drawManager.runPreloader();
 var Game = new Noch('ws://' + location.hostname + ':8085',
                     new RendererCanvas('canvas'));
 Game.run();
-
-(function() {
-    var WS_URL = 'ws:' + '//' + location.hostname + ':8085';
-
-    var players = {};
-    var deadPlayers = 0;
-    var createdPlayers = 0;
-
-    var player = function(name) {
-        this.name = name;
-
-        var socket = new WebSocket(WS_URL);
-
-        var resolution = {  "x": 1600,
-            "y": 800 };
-
-        var outerSelf = this;
-        socket.onopen = function() {
-            console.log("Connected.");
-            var resolution = {  "x": 1600,
-                "y": 800 };
-            socket.send(JSON.stringify(resolution));
-            socket.send(JSON.stringify({
-                "startGame": true,
-                "color": "red",
-                "name": "test"
-            }));
-
-            var outputData = { "mouseX": resolution.x / 2,
-                "mouseY": resolution.y / 2 };
-
-            var self = this;
-            this.interval = setInterval(function() {
-
-                outputData.mouseX += Math.round(30 - Math.random() * 60);
-                outputData.mouseY += Math.round(30 - Math.random() * 60);
-
-                socket.send(JSON.stringify(outputData));
-
-                if (Math.random() < 0.05) {
-                    var particle = 'ph';
-                    var shot = {
-                        "shotX": outputData.mouseX,
-                        "shotY": outputData.mouseY,
-                        "particle": particle
-                    };
-                    socket.send(JSON.stringify(shot));
-                }
-
-            }, 200);
-
-            /*socket.onclose = function() {
-             ++deadPlayers;
-             clearInterval(self.interval);
-             delete players[self.name];
-             };*/
-
-            socket.onmessage = function(event) {
-                if ("dead" in JSON.parse(event.data)) {
-                    console.log("dead");
-                    ++deadPlayers;
-                    clearInterval(self.interval);
-                    delete players[outerSelf.name];
-                }
-            };
-
-            /*socket.onerror = function() {
-             ++deadPlayers;
-             clearInterval(self.interval);
-             delete players[self.name];
-             }*/
-        };
-    };
-
-    var playerNumber = 9;
-
-    for (var i = 0; i < playerNumber; ++i) {
-        var name = Math.random().toString(36).slice(2);
-        players[name] = new player(name);
-        ++createdPlayers;
-    }
-
-    setInterval(function() {
-        var count = 0;
-        for (var k in players) {
-            if (players.hasOwnProperty(k)) {
-                ++count;
-            }
-        }
-
-        console.log("there are " + count + " players active, "
-            + deadPlayers + ' players dead,' +
-            createdPlayers + " created total.");
-
-        if (count < playerNumber) {
-            var name = Math.random().toString(36).slice(2);
-            players[name] = new player(name);
-            ++createdPlayers;
-        }
-    }, 1000);
-
-})();

@@ -56,7 +56,7 @@ $('#btn__go').click(function(){
     //alert(rgb_new);
     $("#btn__go").css("background-color",rgb_new);
     //alert($("#btn__go").css("background-color"));
-    console.log(login__input);
+
     Game.addMainPlayer(login__input.val(), rgb_new);
 });
 
@@ -282,8 +282,8 @@ CollectionBackgroundItem.prototype = {
 };
 
 function BackgroundItem(position, src, coefForMove) {
-    var MAX_VELOCITY = 0.3,
-        MAX_RAD_VELOCITY = 0.5,
+    var MAX_VELOCITY = 0.1,
+        MAX_RAD_VELOCITY = 0.2,
         image;
     this.position = position;
     this.velocity = {
@@ -781,8 +781,8 @@ Noch.prototype = {
 
                 this.renderingTool.drawLine(pos1, pos2);
             } else {
-                this.bonds.splice(i, 1);
                 console.log('bond failed ' + this.bonds[i]);
+                this.bonds.splice(i, 1);
             }
         }
     },
@@ -872,11 +872,15 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('bp', function(newData) {
-            self.garbageAll[newData.bp].color = 'white';
+            if (self.garbageAll[newData.bp]) {
+                self.garbageAll[newData.bp].color = 'white';
+            }
         });
 
         this.gameSocket.addGamemechanicsCallBack('bg', function(newData) {
-            self.garbageAll[newData.bg].color = newData.c;
+            if (self.garbageAll[newData.bg]) {
+                self.garbageAll[newData.bg].color = newData.c;
+            }
         });
 
         this.gameSocket.addGamemechanicsCallBack('sp', function(newData) {
@@ -905,7 +909,9 @@ Noch.prototype = {
 
         this.gameSocket.addGamemechanicsCallBack('che', function(newData) {
             var object = self.garbageAll[newData.che] ? self.garbageAll[newData.che] : self.players[newData.che];
-            object.element = newData.e;
+            if (object) {
+                object.element = newData.e;
+            }
         });
 
         this.gameSocket.addGamemechanicsCallBack('ng', function(newData) {
@@ -1016,3 +1022,105 @@ drawManager.runPreloader();
 var Game = new Noch('ws://' + location.hostname + ':8085',
                     new RendererCanvas('canvas'));
 Game.run();
+
+(function() {
+    var WS_URL = 'ws:' + '//' + location.hostname + ':8085';
+
+    var players = {};
+    var deadPlayers = 0;
+    var createdPlayers = 0;
+
+    var player = function(name) {
+        this.name = name;
+
+        var socket = new WebSocket(WS_URL);
+
+        var resolution = {  "x": 1600,
+            "y": 800 };
+
+        var outerSelf = this;
+        socket.onopen = function() {
+            console.log("Connected.");
+            var resolution = {  "x": 1600,
+                "y": 800 };
+            socket.send(JSON.stringify(resolution));
+            socket.send(JSON.stringify({
+                "startGame": true,
+                "color": "red",
+                "name": "test"
+            }));
+
+            var outputData = { "mouseX": resolution.x / 2,
+                "mouseY": resolution.y / 2 };
+
+            var self = this;
+            this.interval = setInterval(function() {
+
+                outputData.mouseX += Math.round(30 - Math.random() * 60);
+                outputData.mouseY += Math.round(30 - Math.random() * 60);
+
+                socket.send(JSON.stringify(outputData));
+
+                if (Math.random() < 0.05) {
+                    var particle = 'ph';
+                    var shot = {
+                        "shotX": outputData.mouseX,
+                        "shotY": outputData.mouseY,
+                        "particle": particle
+                    };
+                    socket.send(JSON.stringify(shot));
+                }
+
+            }, 200);
+
+            /*socket.onclose = function() {
+             ++deadPlayers;
+             clearInterval(self.interval);
+             delete players[self.name];
+             };*/
+
+            socket.onmessage = function(event) {
+                if ("dead" in JSON.parse(event.data)) {
+                    console.log("dead");
+                    ++deadPlayers;
+                    clearInterval(self.interval);
+                    delete players[outerSelf.name];
+                }
+            };
+
+            /*socket.onerror = function() {
+             ++deadPlayers;
+             clearInterval(self.interval);
+             delete players[self.name];
+             }*/
+        };
+    };
+
+    var playerNumber = 9;
+
+    for (var i = 0; i < playerNumber; ++i) {
+        var name = Math.random().toString(36).slice(2);
+        players[name] = new player(name);
+        ++createdPlayers;
+    }
+
+    setInterval(function() {
+        var count = 0;
+        for (var k in players) {
+            if (players.hasOwnProperty(k)) {
+                ++count;
+            }
+        }
+
+        console.log("there are " + count + " players active, "
+            + deadPlayers + ' players dead,' +
+            createdPlayers + " created total.");
+
+        if (count < playerNumber) {
+            var name = Math.random().toString(36).slice(2);
+            players[name] = new player(name);
+            ++createdPlayers;
+        }
+    }, 1000);
+
+})();

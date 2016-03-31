@@ -725,6 +725,8 @@ var Noch = function(WS_URL, renderingTool) {
     this.wsUrl = WS_URL;
     this.addSocket();
     this.letterSizeCoefficient = 1.5;
+    this.name = null;
+    this.color = null;
 };
 
 Noch.prototype = {
@@ -735,7 +737,7 @@ Noch.prototype = {
     },
 
     removeSocket: function() {
-        delete this.gameSocket;
+        this.gameSocket = null;
     },
 
     addCallback: function(key, callback) {
@@ -853,6 +855,18 @@ Noch.prototype = {
         this.renderingTool.printText(x, y, font, letter);
     },
 
+    onMouseMove: function(event) {
+        dataStorage.updateOutput(event.clientX, event.clientY);
+    },
+
+    onMouseDown: function() {
+        dataStorage.doSend();
+    },
+
+    onMouseUp: function() {
+        dataStorage.dontSend();
+    },
+
     addMainPlayer: function(name, color) {
         //this.mainPlayer = null;
         this.gameSocket.send({
@@ -861,17 +875,14 @@ Noch.prototype = {
             "name": name
         });
 
-        document.addEventListener('mousemove', function(event) {
-            dataStorage.updateOutput(event.clientX, event.clientY);
-        });
+        this.name = name;
+        this.color = color;
 
-        document.addEventListener('mousedown', function() {
-            dataStorage.doSend();
-        });
+        document.addEventListener('mousemove', this.onMouseMove);
 
-        document.addEventListener('mouseup', function() {
-            dataStorage.dontSend();
-        });
+        document.addEventListener('mousedown', this.onMouseDown);
+
+        document.addEventListener('mouseup', this.onMouseUp);
 
         var self = this;
         document.addEventListener('keydown', function(event) {
@@ -884,18 +895,45 @@ Noch.prototype = {
         });
     },
 
-    removeMainPlayer: function() {
+    gameOver: function() {
         //TODO: remove player on gameover
+        this.removeSocket();
+
+        document.removeEventListener('mousemove', this.onMouseMove);
+
+        document.removeEventListener('mousedown', this.onMouseDown);
+
+        document.removeEventListener('mouseup', this.onMouseUp);
+
+        var self = this;
+        var restart = function() {
+            delete self.players[self.mainPlayer.sid];
+            self.addSocket();
+            var waiting = setInterval(function() {
+                if (self.gameSocket.socket.readyState == WebSocket.OPEN) {
+                    self.addMainPlayer(self.name, self.color);
+                    document.removeEventListener('keydown', restart);
+                    $("#last_for_close_dead_window").hide(500);
+                    clearInterval(waiting);
+                }
+            }, 200);
+
+        };
+        setTimeout(function() {
+            document.addEventListener('keydown', restart);
+        }, 2000);
     },
 
     shoot: function(event, particle) {
         event.preventDefault();
-        var shot = {
-            "shotX": dataStorage.outputData.mouseX,
-            "shotY": dataStorage.outputData.mouseY,
-            "particle": particle
-        };
-        this.gameSocket.send(shot);
+        if (this.gameSocket) {
+            var shot = {
+                "shotX": dataStorage.outputData.mouseX,
+                "shotY": dataStorage.outputData.mouseY,
+                "particle": particle
+            };
+            this.gameSocket.send(shot);
+        }
     },
 
     toPlayerCS: function(position) {
@@ -957,6 +995,7 @@ Noch.prototype = {
         this.gameSocket.addGamemechanicsCallBack('dead', function(newData) {
             //alert("you're dead lol");
             simple_animation(death_pic,70);
+            self.gameOver();
         });
 
         this.gameSocket.addGamemechanicsCallBack('che', function(newData) {

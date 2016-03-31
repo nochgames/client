@@ -641,7 +641,11 @@ var GameWebSocket = function(WS_URL) {
 
 GameWebSocket.prototype = {
     send: function (data) {
-        this.socket.send(JSON.stringify(data));
+        try {
+            this.socket.send(JSON.stringify(data));
+        } catch (e) {
+            //do nothing
+        }
     },
 
     addGamemechanicsCallBack: function (key, callback) {

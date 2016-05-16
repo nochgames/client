@@ -901,6 +901,8 @@ Noch.prototype = {
 
     gameOver: function() {
         //TODO: remove player on gameover
+        
+        dataStorage.dontSend();
         this.removeSocket();
 
         document.removeEventListener('mousemove', this.onMouseMove);

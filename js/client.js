@@ -960,6 +960,8 @@ Noch.prototype = {
             self.addSocket();
             var waiting = setInterval(function() {
                 if (self.gameSocket.socket.readyState == WebSocket.OPEN) {
+                    self.garbageAll = {};
+                    self.players = {};
                     self.addMainPlayer(self.name, self.color);
                     document.removeEventListener('keydown', restart);
                     $("#last_for_close_dead_window").hide(500);

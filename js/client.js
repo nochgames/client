@@ -944,6 +944,8 @@ Noch.prototype = {
 
     gameOver: function() {
         //TODO: remove player on gameover
+        
+        dataStorage.dontSend();
         this.removeSocket();
 
         document.removeEventListener('mousemove', this.onMouseMove);
@@ -1125,7 +1127,7 @@ Noch.prototype = {
     },
 
     update: function() {
-        if (dataStorage.sendData()) {
+        if (dataStorage.sendData() && this.gameSocket) {
             this.gameSocket.send(dataStorage.outputData);
         }
         dataStorage.updateCurrentCoefficient();

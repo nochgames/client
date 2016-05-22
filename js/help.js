@@ -29,7 +29,7 @@ GameHelp.prototype = {
 		}
 		else {
 			this.help.innerHTML = 
-			"Удерживайте левую клавишу мыши, чтобы передвигать свой атом!."
+			"Удерживайте левую клавишу мыши, чтобы передвигать свой атом!"
 			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
 		}
 		// this.help.appendChild(this.space_button);
@@ -52,7 +52,7 @@ GameHelp.prototype = {
 		}
 		else {
 			this.help.innerHTML = 
-			"Удерживайте пробел, чтобы возбудить атом. Отпустите клавишу для стрельбы фотоном."
+			"Нажмите на пробел для стрельбы фотоном!"
 			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
 		}
 		// this.help.appendChild(this.space_button);
@@ -74,7 +74,7 @@ GameHelp.prototype = {
 		}
 		else {
 			this.help.innerHTML = 
-			"Избегайте много больших молекул соперников и края карты. Они могут поглотить ваш атом. "
+			"Поглощайте меньшие молекулы противников"
 			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
 		}
         

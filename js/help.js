@@ -52,7 +52,7 @@ GameHelp.prototype = {
 		}
 		else {
 			this.help.innerHTML = 
-			"Удерживайте пробел, чтобы возбудить атом. Отпустите клавишу для стрельбы фотоном."
+			"Нажмите пробел, чтобы выпустить фотон.";
 			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
 		}
 		// this.help.appendChild(this.space_button);

@@ -11,6 +11,8 @@
     <script type="text/javascript" src="help.js"></script>
     <script type="text/javascript" src="hover_animation.js"></script>
     <script type="text/javascript" src="simple_animation.js"></script>
+    <script type="text/javascript" src="circle_animation.js"></script>
+    <script type="text/javascript" src="cookie.js"></script>
 </head>
 <style>
 </style>
@@ -67,6 +69,7 @@
     <div id = "dead"> 
     <!--Death animation-->
     </div>
+    <div id = 'help_animation'> </div>
     <div id ="help"> </div>
     <canvas id="canvas"></canvas>
 </div>
@@ -111,9 +114,14 @@
         }
     }
     //_______________анимация кнопки для гаража и подсказки купить атом чтоб мы получили бабки
+    var fly_help = [];
+    var shoot_help = [];
+    var dontDie_help = [];
     $( document ).ready(function() {
         //картинки для гаража
+
         var arr = [];
+
         for (var i=0;i<100;i++){
             var img = document.createElement('img');
             //img.className = "garage_img";
@@ -151,6 +159,49 @@
         death_pic = arr2;
         hover_animation(arr,100);
         // simple_animation(death_pic,70);
+        for (var i=1;i<=115;i++){
+            var img = document.createElement('img');
+            //img.className = "garage_img";
+            img.src = "hints/fly/" + i + ".png";
+            img.style.display = "none";
+            img.style.position = "absolute";
+            img.style.top = "0px";
+            img.style.right = "0px";
+            img.style.zIndex = 3;
+            var relative = document.getElementById('help_animation');
+            relative.appendChild(img);
+            fly_help.push(img);
+            
+        }
+
+        for (var i=1;i<=30;i++){
+            var img = document.createElement('img');
+            //img.className = "garage_img";
+            img.src = "hints/shoot/" + i + ".png";
+            img.style.display = "none";
+            img.style.position = "absolute";
+            img.style.top = "0px";
+            img.style.right = "0px";
+            img.style.zIndex = 3;
+            var relative = document.getElementById('help_animation');
+            relative.appendChild(img);
+            shoot_help.push(img);
+            
+        }
+        for (var i=1;i<=30;i++){
+            var img = document.createElement('img');
+            //img.className = "garage_img";
+            img.src = "hints/dontDie/" + i + ".png";
+            img.style.display = "none";
+            img.style.position = "absolute";
+            img.style.top = "0px";
+            img.style.right = "0px";
+            img.style.zIndex = 3;
+            var relative = document.getElementById('help_animation');
+            relative.appendChild(img);
+            dontDie_help.push(img);
+            
+        }
         
     });
      //______отключение увеличения умеьшения в сафари по плюсу и минусу

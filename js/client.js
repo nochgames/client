@@ -872,6 +872,7 @@ Noch.prototype = {
     },
 
     addMainPlayer: function(name, color) {
+        this.players = {};
         //this.mainPlayer = null;
         this.gameSocket.send({
             "startGame": true,
@@ -961,7 +962,7 @@ Noch.prototype = {
             var waiting = setInterval(function() {
                 if (self.gameSocket.socket.readyState == WebSocket.OPEN) {
                     self.garbageAll = {};
-                    //self.players = {};
+                    self.players = {};
                     self.addMainPlayer(self.name, self.color);
                     document.removeEventListener('keydown', restart);
                     $("#last_for_close_dead_window").hide(500);

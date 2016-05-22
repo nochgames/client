@@ -1,41 +1,39 @@
-function circle_animation(arr,count) {
-         function animation(){
-            arr[tick % count].style.display = "block";
-            var prev = tick % count - 1;
-            if (tick % count == 0) prev = count - 1;
-            arr[prev].style.display = "none";
-            tick++;
-            if (!animate){
-               return; 
-            }
-            requestAnimationFrame(animation);
-            
-        }
-        function start(){ 
-            animate = !animate;
-            requestId = requestAnimationFrame(animation);
-            //Game.addCallback('button', animation);
-
-        }
-        function stop(){
-            var prev = tick % count - 1;
-            if (tick % count == 0) prev = count - 1;
-            arr[tick % count].style.display = "none";
-            arr[tick % count-1].style.display = "none";
-            arr[0].style.display = "block";
-            arr[prev].style.display = "none";
-            cancelAnimationFrame(requestId);
-            //Game.removeCallback('button');
-            tick = 0;
-            animate = !animate;
-           
-        }
-        ///
-        var tick = 0,animate = false;
-        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+var CircleAnimation = function(arr,count){
+        this.tick = 0;
+        this.animate = false;
+        this.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
                               window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
         window.requestAnimationFrame = requestAnimationFrame;
-        var requestId;
-        start();
-        
-}
+        this.requestId;
+        this.arr = arr; 
+        this.count = count;
+
+};
+CircleAnimation.prototype = {
+        animation: function(self) {
+            if (!this.animate){
+                return; 
+             }
+            this.arr[this.tick % this.count].style.display = "block";
+            var prev = this.tick % this.count - 1;
+            if (this.tick % this.count == 0) prev = this.count - 1;
+            this.arr[prev].style.display = "none";
+            this.tick++;
+            requestAnimationFrame(this.animation.bind(this));
+            
+        },
+        start: function(){ 
+            this.animate = !this.animate;
+            this.requestId = requestAnimationFrame(this.animation.bind(this));
+
+        },
+        stop: function(){
+            cancelAnimationFrame(this.requestId);
+            this.animate = !this.animate;
+            for (var i = 0; i<this.count;i++){
+                this.arr[i].style.display = 'none';
+            }
+           
+        }
+
+};

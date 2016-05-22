@@ -9,28 +9,53 @@ var GameHelp = function(){
 	this.space_button.style.color = "red";
 	this.space_button.style.textAlign = "center";
 	this.layout.appendChild(this.help); 
+
+	this.help.style.width = "100%";
 };
 
 GameHelp.prototype = {
-	flyFaster: function (lang,width) {
+	fly: function (lang,width) {
 		if (!lang){
 			lang = "eng";
 		}
-		if (!width){
-			width = 250;
-		}
-		this.help.style.width = width + "px";
+		// if (!width){
+		// 	width = 250;
+		// }
+		// //this.help.style.width = "100%";
 		if (lang == "eng"){
 			this.help.innerHTML = 
-			"Hold the space button<br/>to excite your atom.<br/>Release when ready<br/>to shoot with a photon."
+			"Hold the space button to excite your atom. Release when ready to shoot with a photon."
 			this.space_button.innerHTML = "&lt;press space button&gt"
 		}
 		else {
 			this.help.innerHTML = 
-			"Удерживайте пробел,<br/>чтобы возбудить атом.<br/>Отпустите клавишу<br/>для стрельбы фотоном."
+			"Удерживайте левую клавишу мыши, чтобы передвигать свой атом!."
 			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
 		}
-		this.help.appendChild(this.space_button);
+		// this.help.appendChild(this.space_button);
+		//$(this.layout).hide(1000);
+    	$(this.layout).show(1000);
+    },
+
+	shoot: function (lang,width) {
+		if (!lang){
+			lang = "eng";
+		}
+		// if (!width){
+		// 	width = 250;
+		// }
+		// this.help.style.width = width + "px";
+		if (lang == "eng"){
+			this.help.innerHTML = 
+			"Hold the space button to excite your atom. Release when ready to shoot with a photon."
+			this.space_button.innerHTML = "&lt;press space button&gt"
+		}
+		else {
+			this.help.innerHTML = 
+			"Удерживайте пробел, чтобы возбудить атом. Отпустите клавишу для стрельбы фотоном."
+			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
+		}
+		// this.help.appendChild(this.space_button);
 		//$(this.layout).hide(1000);
     	$(this.layout).show(1000);
     },
@@ -38,22 +63,22 @@ GameHelp.prototype = {
 		if (!lang){
 			lang = "eng";
 		}
-		if (!width){
-			width = 250;
-		}
-		this.help.style.width = width + "px";
+		// if (!width){
+		// 	width = 250;
+		// }
+		// this.help.style.width = width + "px";
 		if (lang == "eng"){
 			this.help.innerHTML = 
-			"Avoid much bigger<br/>enemy's molecules<br/>and map border.<br/>It may absorb your atom."
+			"Avoid much bigger enemy's molecules and map border. It may absorb your atom."
 			this.space_button.innerHTML = "&lt;press space button&gt"
 		}
 		else {
 			this.help.innerHTML = 
-			"Избегайте много больших<br/>молекул соперников и<br/>края карты. Они могут<br/>поглотить ваш атом.<br/>"
+			"Избегайте много больших молекул соперников и края карты. Они могут поглотить ваш атом. "
 			this.space_button.innerHTML = "&lt;нажмите на пробел&gt"
 		}
         
-		this.help.appendChild(this.space_button);
+		// this.help.appendChild(this.space_button);
 		//$(this.layout).hide(1000);
     	$(this.layout).show(1000);
     },

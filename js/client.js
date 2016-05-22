@@ -860,23 +860,60 @@ Noch.prototype = {
             "color": color,
             "name": name
         });
-
+        var self = this;
         document.addEventListener('mousemove', function(event) {
             dataStorage.updateOutput(event.clientX, event.clientY);
         });
-
+                ///help
+        if (!self.help){
+            function start_help(){
+                setCookie("help", "already", {
+                    expires: 316*24*12
+                });
+                self.help =  new GameHelp();
+                self.helper = 'fly';
+                self.help.fly("ru",250);
+                self.fly_anim = new CircleAnimation(fly_help,115);
+                self.fly_anim.start();
+            }
+            if (!getCookie('help')){
+                setTimeout(start_help,2000);
+            }
+        }
+        ////
         document.addEventListener('mousedown', function() {
             dataStorage.doSend();
+            if (self.helper == 'fly') {
+                self.helper = 'shoot';
+                self.fly_anim.stop();
+                self.help.changeHelp(function() { self.help.shoot("ru",250); });
+                self.shoot_anim = new CircleAnimation(shoot_help,30);
+                self.shoot_anim.start();
+                // circle_animation(shoot_help,115);
+            }
         });
 
         document.addEventListener('mouseup', function() {
             dataStorage.dontSend();
         });
 
-        var self = this;
+        document.addEventListener('touchstart', function() {
+            dataStorage.doSend();
+        });
+        document.addEventListener('touchend', function() {
+            dataStorage.doSend();
+        });
         document.addEventListener('keydown', function(event) {
             if (event.keyCode == 32) {
                 self.shoot(event, "ph");
+                if (self.helper == 'shoot'){
+                    this.helper = 'dontDie';
+                    self.shoot_anim.stop();
+                    self.help.changeHelp(function() { self.help.dontDie("ru",250); });
+                    self.dontDie_anim = new CircleAnimation(dontDie_help,30);
+                    self.dontDie_anim.start();
+                    setTimeout(function() {self.dontDie_anim.stop(); self.help.hideHelp();},5000);
+                }
             }
             /*if (event.keyCode == 78) {
                 self.shoot(event, "n");

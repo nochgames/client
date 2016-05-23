@@ -9,7 +9,7 @@ UI scripts
 */
 
 function validateInputFields(inputField) {
-    if (inputField.val() == "") {
+    if (inputField.val() == "" || inputField.val().length > 15) {
         inputField.addClass('error__div');
         return false;
     } else {
@@ -25,7 +25,13 @@ $('#btn__go').click(function(){
     if (!validateInputFields(login__input)) return;
     $('#overlay').hide();
     ////////
-    var color = $('#btn__go').css("background-color");
+
+    var color = $('#btn__go').css("background-color");    
+    if (color == "rgb(255, 165, 0)"){
+        color = "rgb(" + Math.round(Math.random() * 255) + 
+                ',' +  Math.round(Math.random()) * 255 + 
+                ',' +  Math.round(Math.random()) * 255 + ')';
+    }
     //alert(color)
     var rgb = [];
     var tmp = "";

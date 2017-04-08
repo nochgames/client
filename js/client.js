@@ -522,6 +522,12 @@ var dataStorage = (function() {
             bondWidth *= coefficient / oldCoefficient;
         },
 
+        setBrickSize: function (width, height) {
+            brickSize = { width: width * coefficient,
+                height: height * coefficient,
+                lineWidth: 0.00293 * longDimension * coefficient};
+        },
+
         setMainPlayer: function(player) {
             mainPlayer = player;
         },
@@ -962,6 +968,12 @@ Noch.prototype = {
         var restart = function() {
             delete self.players[self.mainPlayer.sid];
             self.addSocket();
+
+            self.players = {};
+            self.border = [];
+            self.bonds = [];
+            self.garbageAll = {};
+
             var waiting = setInterval(function() {
                 if (self.gameSocket.socket.readyState == WebSocket.OPEN) {
                     self.addMainPlayer(self.name, self.color);
@@ -1023,6 +1035,7 @@ Noch.prototype = {
         });
 
         this.gameSocket.addGamemechanicsCallBack('sp', function(newData) {
+            dataStorage.setBrickSize(newData.bh, newData.bl);
             self.mainPlayer = { position: {x: newData.sp.x, y: newData.sp.y } };
             dataStorage.setMainPlayer({ position: {x: newData.sp.x, y: newData.sp.y } });
             self.background = new Background();

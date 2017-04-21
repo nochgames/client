@@ -451,6 +451,7 @@ var dataStorage = (function() {
                         lineWidth: 0.00293 * longDimension * coefficient},
 
     bondWidth = 0.00366 * longDimension * coefficient,
+    bondOffset = 0.008 * longDimension * coefficient,
 
     elementInformation = {
         "N": { radius: 0.0227 * longDimension * coefficient,
@@ -529,6 +530,8 @@ var dataStorage = (function() {
             brickSize.lineWidth *= coefficient / oldCoefficient;
 
             bondWidth *= coefficient / oldCoefficient;
+
+            bondOffset *= coefficient / oldCoefficient;
         },
 
         setBrickSize: function (width, height) {
@@ -555,6 +558,10 @@ var dataStorage = (function() {
 
         get bondWidth() {
             return bondWidth;
+        },
+
+        get bondOffset() {
+            return bondOffset;
         },
 
         get mainPlayerPosition() {
@@ -771,6 +778,15 @@ Noch.prototype = {
         delete this.callbacks[key];
     },
 
+    rotateCS: function (pos, angle) {
+        var newPos = {};
+        newPos.x = Math.ceil(pos.x * Math.cos(angle) +
+                    pos.y * Math.sin(angle));
+        newPos.y = Math.ceil(-pos.x * Math.sin(angle) +
+                    pos.y * Math.cos(angle));
+        return newPos;
+    },
+
     drawGarbage: function() {
 
         for (var key in this.garbageAll) {
@@ -820,6 +836,20 @@ Noch.prototype = {
         }
     },
 
+    drawBondLine: function(bondLength, CSpos, angle, bondOffset) {
+        var pos1 = {x:0,        y:bondOffset};
+        var pos2 = {x:bondLength, y:bondOffset};
+
+        pos1 = this.rotateCS(pos1, -angle);
+        pos2 = this.rotateCS(pos2, -angle);
+        pos1.x += CSpos.x;
+        pos1.y += CSpos.y;
+        pos2.x += CSpos.x;
+        pos2.y += CSpos.y;
+
+        this.renderingTool.drawLine(pos1, pos2);
+    },
+
     drawBonds: function() {
         this.renderingTool.setLineWidth(dataStorage.bondWidth);
         this.renderingTool.setStrokeColor('white');
@@ -846,7 +876,29 @@ Noch.prototype = {
                 var pos1 = dataStorage.scale(objA);
                 var pos2 = dataStorage.scale(objB);
 
-                this.renderingTool.drawLine(pos1, pos2);
+                if (this.bonds[i].type == 2 || this.bonds[i].type == 3) {
+
+                    var localPos2 = {};
+                    localPos2.x = pos2.x - pos1.x;
+                    localPos2.y = pos2.y - pos1.y;
+
+                    var angle = Math.atan(localPos2.y / localPos2.x);
+
+                    if (localPos2.x < 0) {
+                        angle += Math.PI;
+                    } else if (localPos2.x > 0 && localPos2.y < 0) {
+                        angle += 2 * Math.PI;
+                    }
+
+                    var pos = this.rotateCS(localPos2, angle);
+
+                    this.drawBondLine(pos.x, pos1, angle, dataStorage.bondOffset);
+                    this.drawBondLine(pos.x, pos1, angle, -dataStorage.bondOffset);
+                }
+
+                if (this.bonds[i].type == 1 || this.bonds[i].type == 3) {
+                    this.renderingTool.drawLine(pos1, pos2);
+                }
             } else {
                 console.log('bond failed ' + this.bonds[i]);
                 this.bonds.splice(i, 1);
@@ -1116,7 +1168,7 @@ Noch.prototype = {
 
         this.gameSocket.addGamemechanicsCallBack('b1', function(newData) {
             if (self.bonds.indexOf({ idA: newData.b1, idB: newData.b2 }) == -1) {
-                self.bonds.push({ idA: newData.b1, idB: newData.b2 });
+                self.bonds.push({ idA: newData.b1, idB: newData.b2, type: 1 });
             }
         });
 
@@ -1146,7 +1198,7 @@ Noch.prototype = {
                 } else {
                     console.log("garbage probably hasn't arrived yet");
                     console.log(newData.gba[i]);
-                    console.log(self.garbageAll);
+                    //console.log(self.garbageAll);
                 }
             }
         });

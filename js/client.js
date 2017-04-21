@@ -17,6 +17,14 @@ function validateInputFields(inputField) {
         return true;
     }
 }
+$('#btn__hide').click(function () {
+    var overlay = $('#overlay');
+    if (overlay.is(":visible")) {
+        overlay.hide();
+    } else {
+        overlay.show();
+    }
+});
 
 $('#btn__go').click(function(){
     var login__input = $('#login__input');
@@ -24,6 +32,7 @@ $('#btn__go').click(function(){
 
     if (!validateInputFields(login__input)) return;
     $('#overlay').hide();
+    $('#btn__hide').hide();
     ////////
 
     var color = $('#btn__go').css("background-color");    

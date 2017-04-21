@@ -66,6 +66,15 @@ body{
     display: table;
 }
 
+#btn__hide {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index:100501;
+    width:30%;
+    height:30%;
+}
+
 #btn__go h2 {
     display: table-cell;
     vertical-align: middle;

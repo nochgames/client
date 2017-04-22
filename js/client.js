@@ -878,22 +878,23 @@ Noch.prototype = {
 
                 if (this.bonds[i].type == 2 || this.bonds[i].type == 3) {
 
-                    var localPos2 = {};
-                    localPos2.x = pos2.x - pos1.x;
-                    localPos2.y = pos2.y - pos1.y;
+                    var localPos = {};
+                    localPos.x = pos2.x - pos1.x;
+                    localPos.y = pos2.y - pos1.y;
 
-                    var angle = Math.atan(localPos2.y / localPos2.x);
+                    var angle = Math.atan(localPos.y / localPos.x);
 
-                    if (localPos2.x < 0) {
+                    if (localPos.x < 0) {
                         angle += Math.PI;
-                    } else if (localPos2.x > 0 && localPos2.y < 0) {
+                    } else if (localPos.x > 0 && localPos.y < 0) {
                         angle += 2 * Math.PI;
                     }
 
-                    var pos = this.rotateCS(localPos2, angle);
+                    var length =
+                        Math.sqrt(Math.pow(localPos.x, 2) + Math.pow(localPos.y, 2))
 
-                    this.drawBondLine(pos.x, pos1, angle, dataStorage.bondOffset);
-                    this.drawBondLine(pos.x, pos1, angle, -dataStorage.bondOffset);
+                    this.drawBondLine(length, pos1, angle, dataStorage.bondOffset);
+                    this.drawBondLine(length, pos1, angle, -dataStorage.bondOffset);
                 }
 
                 if (this.bonds[i].type == 1 || this.bonds[i].type == 3) {
@@ -1168,7 +1169,7 @@ Noch.prototype = {
 
         this.gameSocket.addGamemechanicsCallBack('b1', function(newData) {
             if (self.bonds.indexOf({ idA: newData.b1, idB: newData.b2 }) == -1) {
-                self.bonds.push({ idA: newData.b1, idB: newData.b2, type: 1 });
+                self.bonds.push({ idA: newData.b1, idB: newData.b2, type: parseInt(newData.t) });
             }
         });
 

@@ -17,13 +17,16 @@ function validateInputFields(inputField) {
         return true;
     }
 }
-$('#btn__hide').click(function () {
+function hideOverlay() {
     var overlay = $('#overlay');
     if (overlay.is(":visible")) {
         overlay.hide();
     } else {
         overlay.show();
     }
+}
+$('#btn__hide').click(function () {
+    hideOverlay();
 });
 
 $('#btn__go').click(function(){
@@ -802,7 +805,8 @@ Noch.prototype = {
             var pos = dataStorage.scale(this.toPlayerCS(this.garbageAll[key].position));
 
             this.drawElement(pos.x, pos.y, radius, this.garbageAll[key].color);
-            this.drawLetter(pos.x, pos.y, fontSize, element, radius, length);
+            this.drawLetter(pos.x, pos.y, fontSize, /*key*/element, radius, length);
+            this.drawLetter(pos.x, pos.y, fontSize, /*key*/element, radius, length);
         }
     },
 
@@ -817,7 +821,7 @@ Noch.prototype = {
 
             this.drawPlayer(pos.x, pos.y, radius, this.players[key].color, this.players[key].getIndicatorAngle());
             //this.drawElement(pos.x, pos.y, radius, this.players[key].color, this.players[key].element);
-            this.drawLetter(pos.x, pos.y, fontSize, this.players[key].element, radius, length);
+            this.drawLetter(pos.x, pos.y, fontSize, /*key*/this.players[key].element, radius, length);
             //this.indicatorProton.draw (pos.x, pos.y,
             // radiuses[players[key].element], ctx);
             //this.drawIndicatorNeutron(pos.x, pos.y, radius, this.players[key].color, key, ctx);
@@ -901,7 +905,7 @@ Noch.prototype = {
                     this.renderingTool.drawLine(pos1, pos2);
                 }
             } else {
-                console.log('bond failed ' + this.bonds[i]);
+                //console.log('bond failed ' + this.bonds[i]);
                 this.bonds.splice(i, 1);
             }
         }
@@ -1187,7 +1191,7 @@ Noch.prototype = {
         this.gameSocket.addGamemechanicsCallBack('gba', function(newData) {
             if (newData.players && newData.players.length) {
                 for (var i = 0; i < newData.players.length; i += 3) {
-                    if(!self.players[newData.players[i]]) console.log(newData.players[i]);
+                    //if(!self.players[newData.players[i]]) console.log(newData.players[i]);
                     self.players[newData.players[i]].position.x = newData.players[i + 1];
                     self.players[newData.players[i]].position.y = newData.players[i + 2];
                 }
@@ -1197,8 +1201,8 @@ Noch.prototype = {
                 if (self.garbageAll[newData.gba[i]]) {
                     self.garbageAll[newData.gba[i]].setPosition({ x: newData.gba[i + 1], y: newData.gba[i + 2]});
                 } else {
-                    console.log("garbage probably hasn't arrived yet");
-                    console.log(newData.gba[i]);
+                    //console.log("garbage probably hasn't arrived yet");
+                    //console.log(newData.gba[i]);
                     //console.log(self.garbageAll);
                 }
             }
@@ -1242,8 +1246,21 @@ Start of the game
 =======================================================================
 */
 
+hideOverlay();
+
 var drawManager = new DrawManager("canvas");
 drawManager.runPreloader();
-var Game = new Noch('ws://' + location.hostname + ':8085',
-                    new RendererCanvas('canvas'));
-Game.run();
+var renderer = new RendererCanvas('canvas')
+var Game;
+
+var url = 'http://' + location.hostname + ':' + location.port + '/api/ports';
+$.get(url, function (port) {
+
+    if (port != -1) {
+        hideOverlay();
+        Game = new Noch('ws://' + location.hostname + ':' + port, renderer);
+        Game.run();
+    } else {
+        alert('All servers are full');
+    }
+});

@@ -107,14 +107,14 @@ RendererCanvas.prototype = {
         this.ctx.fillStyle = color;
     },
 
-    drawRectangle: function(x, y, width, height, angle) {
+    drawBorderPart: function(x, y, width, height, angle) {
         this.ctx.beginPath();
         this.ctx.save();
 
         this.ctx.translate(x, y);
         this.ctx.rotate(angle);
 
-        this.ctx.rect(-width / 2, - height / 2, width / 2, height);
+        this.ctx.rect(width*0.04, -height / 2, width / 2, height);
 
         this.ctx.stroke();
         this.ctx.restore();
@@ -540,8 +540,8 @@ var dataStorage = (function() {
         },
 
         setBrickSize: function (width, height) {
-            brickSize = { width: width * coefficient,
-                height: height * coefficient,
+            brickSize = { width: width / 1366 * longDimension * coefficient,
+                height: height / 1366 * longDimension * coefficient,
                 lineWidth: 0.00293 * longDimension * coefficient};
         },
 
@@ -837,7 +837,7 @@ Noch.prototype = {
 
         for (var i = 0; i < this.border.length; ++i) {
             var pos = dataStorage.scale(this.toPlayerCS(this.border[i].position));
-            this.renderingTool.drawRectangle(
+            this.renderingTool.drawBorderPart(
                 pos.x, pos.y, brickSize.width, brickSize.height, this.border[i].angle);
         }
     },

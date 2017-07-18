@@ -510,6 +510,8 @@ var dataStorage = (function() {
         brickSize.lineWidth *= longDimension / oldLongDimension;
 
         bondWidth *= longDimension / oldLongDimension;
+
+        bondOffset *= longDimension / oldLongDimension;
     });
 
     return {

@@ -930,7 +930,7 @@ Noch.prototype = {
         var xReducer = 5,
             yReducer = 6;
 
-        var font = "bold " + fontSize + "px tellural_altbold";
+        var font = fontSize + "px Archive";
         x = x - radius / 2 - (length - 1) * radius / xReducer;
         y = y + radius / 2 + - (length - 1) * radius / yReducer;
 

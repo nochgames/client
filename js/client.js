@@ -439,7 +439,7 @@ var dataStorage = (function() {
     var coefficient,
         targetCoefficient = coefficient = 0.2,
         inputData = {},
-        send = false,
+        send = false,f
         outputData = { "mouseX": 0, "mouseY": 0},
         leaderBoard = {},
         mainPlayer = null,

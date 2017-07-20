@@ -777,7 +777,7 @@ Noch.prototype = {
     },
 
     drawElement: function(x, y, radius, color) {
-        this.renderingTool.setFillStyle='#1b1b1b';
+        this.renderingTool.setFillStyle='#0b0b0b';
         this.renderingTool.setStrokeColor(color);
         this.renderingTool.drawCircle(x, y, radius);
     },

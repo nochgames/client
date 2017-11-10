@@ -82,6 +82,43 @@ Game and rendering logic
 ======================================================================================
 */
 
+class RendererPIXI {
+    constructor(onLoadCallback) {
+        this.app = new PIXI.Application(window.innerWidth, window.innerHeight,
+            {backgroundColor : 0x000000, transparent: true});
+
+        this.preloadImages(onLoadCallback);
+    }
+
+    preloadImages(setUp) {
+        let baseCatalog = "/",
+            collectionOfImages = [
+                {
+                    prefix: "3layer/q",
+                    count: 30
+                }, {
+                    prefix: "2layer/",
+                    count: 35
+                }, {
+                    prefix: "1layer/q",
+                    count: 29
+                }, {
+                    prefix: "clouds/",
+                    count: 29
+                }
+            ];
+        for (let i = 0; i < collectionOfImages.length; i++) {
+            for (let j = 1; j <= collectionOfImages[i].count; j++) {
+                PIXI.loader.add(baseCatalog + collectionOfImages[i].prefix + j + ".png");
+            }
+        }
+        PIXI.loader.load((loader, res) => {
+            setUp(loader, res);
+            document.body.appendChild(this.app.view);
+        });
+    }
+}
+
 var RendererCanvas = function(canvasId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
@@ -390,7 +427,6 @@ DrawManager.prototype = {
                 });
             }
         }
-
     },
     drawBackgroundItem: function (itemBackground) {
         if (!this.preloaderFlag) return;
@@ -1252,17 +1288,23 @@ hideOverlay();
 
 var drawManager = new DrawManager("canvas");
 drawManager.runPreloader();
-var renderer = new RendererCanvas('canvas')
+var renderer = new RendererCanvas('canvas');
+
 var Game;
 
-var url = 'http://' + location.hostname + ':' + location.port + '/api/ports';
-$.get(url, function (port) {
 
-    if (port != -1) {
-        hideOverlay();
-        Game = new Noch('ws://' + location.hostname + ':' + port, renderer);
-        Game.run();
-    } else {
-        alert('All servers are full');
-    }
-});
+let start = () => {
+    let url = 'http://' + location.hostname + ':' + location.port + '/api/ports';
+    $.get(url, function (port) {
+
+        if (port != -1) {
+            hideOverlay();
+            Game = new Noch('ws://' + location.hostname + ':' + port, renderer);
+            Game.run();
+        } else {
+            alert('All servers are full');
+        }
+    });
+};
+
+let rendererPixi = new RendererPIXI(start);

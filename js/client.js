@@ -134,7 +134,7 @@ class BackGroundItemCollection {
         this.collectionOfLevels = [ [], [], [], [] ];
         this.densityOfLevel = [60000, 100000, 60000, 60000];
         this.coefForMovie = [1.2, 0.9, 0.6, 0.3];
-        this.coefForSize = [1.5, 1, 0.5, 1];
+        this.coefForSize = [1.5, 1, 0.5, 2];
         this.conuts = [];
         this.container = new PIXI.Container();
         pixiApp.stage.addChild(this.container);
@@ -170,6 +170,7 @@ class BackGroundItemCollection {
     }
 
     tick(deltaPlayerPosition, deltaCoefScale) {
+    	console.log(dataStorage.densityOfLevel);
         if (deltaCoefScale) {
             this.zoomGame(deltaCoefScale);
         }
@@ -236,6 +237,7 @@ class BackGroundItemCollection {
             this.fillArea(newMinX, oldMaxY, newMaxX, newMaxY);
             this.fillArea(newMinX, newMinY, newMaxX, oldMinY);
             this.fillArea(oldMaxX, oldMinY, newMaxX, oldMaxY);
+            console.log("new size " + newMaxX);
         } else {
             // уменьшение
             for (var i = 0; i < this.collectionOfLevels.length; i++) {
@@ -369,10 +371,10 @@ RendererCanvas.prototype = {
 class BackgroundItem {
 
     static get MAX_VELOCITY() {
-        return 40.7;
+        return 1.7;
     }
     static get MAX_RAD_VELOCITY() {
-        return 0.02;
+        return 0.04;
     }
     static get COEF_STEP() {
         return 0.3;
@@ -468,8 +470,9 @@ var dataStorage = (function() {
             lineWidth: 0 },
         "ph": { radius: 0.0073 * longDimension * coefficient,
             lineWidth: 0 }
-    };
+    },
 
+    densityOfLevels = [500000, 300000, 150000, 120000];
 
     for (var key in elementInformation) {
         elementInformation[key].lineWidth = 0.00659 * longDimension /
@@ -497,6 +500,8 @@ var dataStorage = (function() {
         bondWidth *= longDimension / oldLongDimension;
 
         bondOffset *= longDimension / oldLongDimension;
+
+
     });
 
     return {
@@ -544,6 +549,23 @@ var dataStorage = (function() {
 
         sendData: function() {
             return send;
+        },
+
+        get backgroundSize() {
+        	return {width: size.width * 1.5,
+        		height: size.height * 1.5};
+        },
+
+        get densityOfLevel() {
+        	let square = dataStorage.backgroundSize.width * 
+        		dataStorage.backgroundSize.height / 
+        		dataStorage.coefficient / dataStorage.coefficient;
+
+        	var densities = [];
+        	for (var i = 0; i < densityOfLevels.length; ++i) {
+        		densities.push(Math.round(square / densityOfLevels[i]));
+        	}
+        	return densities;
         },
 
         get bondWidth() {

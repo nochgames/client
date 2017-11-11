@@ -123,6 +123,10 @@ class BackGround {
         this.prevCoefScale = dataStorage.coefficient;
         //requestAnimationFrame( this.tick.bind(this) );
     }
+
+    clear() {
+    	this.collectionBackgroundItem.clear();
+    }
 }
 
 class BackGroundItemCollection {
@@ -132,59 +136,30 @@ class BackGroundItemCollection {
 
     constructor(pixiApp) {
         this.collectionOfLevels = [ [], [], [], [] ];
-        this.densityOfLevel = [60000, 100000, 60000, 60000];
         this.coefForMovie = [1.2, 0.9, 0.6, 0.3];
         this.coefForSize = [1.5, 1, 0.5, 2];
         this.conuts = [];
         this.container = new PIXI.Container();
         pixiApp.stage.addChild(this.container);
 
-        this.fillArea(- dataStorage.size.width / 4, - dataStorage.size.height / 4,
-            dataStorage.size.width * 5 / 4, dataStorage.size.height * 5 / 4);
-    }
-
-    fillArea(minX, minY, maxX, maxY) {
-        var baseCatalog = "/",
-            collectionOfImages = BackGroundItemCollection.collectionOfImages;
-        for (var i = this.collectionOfLevels.length - 1; i >= 0; i--) {            //потому что нужно захватить еще и не отображаемые поля
-            
-            var count = Math.floor((maxX - minX) * (maxY - minY) / (this.densityOfLevel[i] * dataStorage.coefficient)),
-                oldLengthCollection = this.collectionOfLevels[i].length;
-
-        	console.log("level " + i + " old quantity " + this.collectionOfLevels[i].length + " new quantity " + (count + oldLengthCollection));
-            while (this.collectionOfLevels[i].length < count + oldLengthCollection) {
-                //пришлось манипулировать с единицами так, как номера картинок начинаются с 1, а не с 0
-                var randomIndexImage = Math.floor(Math.random() * (collectionOfImages[i].count - 1) + 1),
-                    randomImageSrc = baseCatalog + collectionOfImages[i].prefix + randomIndexImage + ".png",
-                    randomPosition = {
-                        x: Math.floor(Math.random() * (maxX - minX)) + minX,
-                        y: Math.floor(Math.random() * (maxY - minY)) + minY
-                    };
-                this.collectionOfLevels[i].push(new BackgroundItem(
-                	randomPosition, randomImageSrc, this.coefForMovie[i], this.coefForSize[i], this.container));
-            }
-
-        	//console.log("level " + i + " " + this.collectionOfLevels[i].length);
-
-        }
+        this.checkBackGroundElementQuantity(()=>{return this.getRandomPositionInside()});
     }
 
     tick(deltaPlayerPosition, deltaCoefScale) {
-    	console.log(dataStorage.densityOfLevel);
         if (deltaCoefScale) {
             this.zoomGame(deltaCoefScale);
         }
+    	this.checkBackGroundElementQuantity(()=>{return this.getRandomPositionOutside()});
 
         for (var i = 0; i < this.collectionOfLevels.length; i++) {
             for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
                 this.holdIfGetOut(this.collectionOfLevels[i][j]);
-                if (deltaPlayerPosition) {
-                    this.collectionOfLevels[i][j].tick(deltaPlayerPosition);
-                }
+                this.collectionOfLevels[i][j].tick(deltaPlayerPosition);
                 //drawManager.drawBackgroundItem(this.collectionOfLevels[i][j]);
             }
         }
     }
+
     holdIfGetOut(itemBackground) {
         if (itemBackground.graphics.position.x <= - dataStorage.size.width / 4) {
             itemBackground.graphics.position.x += 3 / 2 * dataStorage.size.width;
@@ -197,14 +172,77 @@ class BackGroundItemCollection {
         }
     }
 
-    zoomGameGrow(deltaCoefScale) {
+    getRandomImage(level) {
+        var randomIndexImage = Math.floor(Math.random() * (collectionOfImages[level].count - 1) + 1);
+        let baseCatalog = "/";
+        return baseCatalog + collectionOfImages[level].prefix + randomIndexImage + ".png";
+    }
 
+    deleteParticles(level, quantity) {
+    	var j = this.collectionOfLevels[level].length;
+    	var particlesToDelete = quantity;
+    	while (j-- && particlesToDelete) {
+    		var itemBackground = this.collectionOfLevels[level][j];
+    		if ((itemBackground.graphics.position.x <= - dataStorage.size.width / 4)
+                || (itemBackground.graphics.position.x >= dataStorage.size.width * 5 / 4)
+                || (itemBackground.graphics.position.y <= - dataStorage.size.height / 4)
+                || (itemBackground.graphics.position.y >= dataStorage.size.height * 5 / 4)) {
+                this.deleteNode(level, j);
+            	--particlesToDelete;
+            }
+    	}
+    }
+
+    getRandomPositionInside() {
+    	let minX = - dataStorage.size.width / 4;
+    	let minY = - dataStorage.size.height / 4;
+        let maxX = dataStorage.size.width * 5 / 4; 
+        let maxY = dataStorage.size.height * 5 / 4;
+    	return {
+                x: Math.floor(Math.random() * (maxX - minX)) + minX,
+                y: Math.floor(Math.random() * (maxY - minY)) + minY
+            };
+}
+
+    getRandomPositionOutside() {
+    	var randomPosition = {};
+    	let vertical = Math.random() > 0.5;
+
+    	if (vertical) {
+    		randomPosition.x = dataStorage.middle.x - dataStorage.size.width 
+    			* 9 / 16 * (Math.random() > 0.5 ? 1 : -1);
+
+    		randomPosition.y = Math.random() * dataStorage.middle.y + 
+    			(Math.random() > 0.5 ? 1 : -1) * dataStorage.backgroundSize.height * 0.5;
+    	} else {
+    		randomPosition.y = dataStorage.middle.y - dataStorage.size.height 
+    			* 9 / 16 * (Math.random() > 0.5 ? 1 : -1);
+
+    		randomPosition.x = Math.random() * dataStorage.middle.x + 
+    			(Math.random() > 0.5 ? 1 : -1) * dataStorage.backgroundSize.width * 0.5;
+    	}
+    	return randomPosition;
+    }
+
+    addParticles(level, quantity, getRandomPosition) {
+    	for (var j = 0; j < quantity; ++j) {
+    		this.collectionOfLevels[level].push(new BackgroundItem(
+            	getRandomPosition(), this.getRandomImage(level), this.coefForMovie[level], this.coefForSize[level], this.container));
+    	}
+    }
+
+    checkBackGroundElementQuantity(getRandomPosition) {
+    	for (var i = 0; i < this.collectionOfLevels.length; i++) {
+            if (this.collectionOfLevels[i].length > dataStorage.densityOfLevel[i]) {
+            	this.deleteParticles(i, this.collectionOfLevels[i].length - dataStorage.densityOfLevel[i]);
+            } else if (this.collectionOfLevels[i].length < dataStorage.densityOfLevel[i]) {
+            	this.addParticles(i, dataStorage.densityOfLevel[i] - this.collectionOfLevels[i].length, getRandomPosition);
+            }
+        }
     }
 
     zoomGame(deltaCoefScale) {
-        console.log("\n\n");
         for (var i = 0; i < this.collectionOfLevels.length; i++) {
-        	console.log("level " + i + " " + this.collectionOfLevels[i].length);
             for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
                 this.collectionOfLevels[i][j].graphics.scale.set(dataStorage.coefficient * this.collectionOfLevels[i][j].coefForSize);
                 this.collectionOfLevels[i][j].graphics.position.set(((this.collectionOfLevels[i][j].graphics.position.x - dataStorage.middle.x) /
@@ -215,48 +253,20 @@ class BackGroundItemCollection {
                     dataStorage.middle.y);
             }
         }
-        if (deltaCoefScale > 0) {
-            // увеличение
-            var newMinX = - dataStorage.size.width / 4,
-                newMinY = - dataStorage.size.height / 4,
-                newMaxX = dataStorage.size.width * 5 / 4,
-                newMaxY = dataStorage.size.height * 5 / 4,
-                oldMinX = ((- dataStorage.size.width / 4 -
-                    dataStorage.middle.x) / (deltaCoefScale + dataStorage.coefficient))
-                    * dataStorage.coefficient + dataStorage.middle.x,
-                oldMinY = ((- dataStorage.size.height / 4 -
-                    dataStorage.middle.y) / (deltaCoefScale + dataStorage.coefficient))
-                    * dataStorage.coefficient + dataStorage.middle.y,
-                oldMaxX = ((dataStorage.size.width * 5 / 4 -
-                    dataStorage.middle.x) / (deltaCoefScale + dataStorage.coefficient)) *
-                    dataStorage.coefficient + dataStorage.middle.x,
-                oldMaxY = ((dataStorage.size.height * 5 / 4 -
-                    dataStorage.middle.y) / (deltaCoefScale + dataStorage.coefficient)) *
-                    dataStorage.coefficient + dataStorage.middle.y;
-            this.fillArea(newMinX, oldMinY, oldMinX, oldMaxY);
-            this.fillArea(newMinX, oldMaxY, newMaxX, newMaxY);
-            this.fillArea(newMinX, newMinY, newMaxX, oldMinY);
-            this.fillArea(oldMaxX, oldMinY, newMaxX, oldMaxY);
-            console.log("new size " + newMaxX);
-        } else {
-            // уменьшение
-            for (var i = 0; i < this.collectionOfLevels.length; i++) {
-                for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
-                    var itemBackground = this.collectionOfLevels[i][j];
-                    if ((itemBackground.graphics.position.x <= - dataStorage.size.width / 4)
-                        || (itemBackground.graphics.position.x >= dataStorage.size.width * 5 / 4)
-                        || (itemBackground.graphics.position.y <= - dataStorage.size.height / 4)
-                        || (itemBackground.graphics.position.y >= dataStorage.size.height * 5 / 4)) {
-                        this.deleteNode(i, j);
-                    }
-                }
-            }
-        }
     }
+
     deleteNode(layerIndex, itemIndex) {
         if (itemIndex < 0) return;
         this.collectionOfLevels[layerIndex][itemIndex].graphics.destroy();
         this.collectionOfLevels[layerIndex].splice(itemIndex, 1);
+    }
+
+    clear() {
+    	for (var i = 0; i < this.collectionOfLevels.length; i++) {
+            for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
+                this.collectionOfLevels[i][j].graphics.destroy();
+            }
+        }
     }
 }
 
@@ -371,10 +381,10 @@ RendererCanvas.prototype = {
 class BackgroundItem {
 
     static get MAX_VELOCITY() {
-        return 1.7;
+        return 0.7;
     }
     static get MAX_RAD_VELOCITY() {
-        return 0.04;
+        return 0.01;
     }
     static get COEF_STEP() {
         return 0.3;
@@ -1112,6 +1122,8 @@ Noch.prototype = {
             dataStorage.setBrickSize(newData.bh, newData.bl);
             self.mainPlayer = { position: {x: newData.sp.x, y: newData.sp.y } };
             dataStorage.setMainPlayer({ position: {x: newData.sp.x, y: newData.sp.y } });
+            if (self.background)
+            	self.background.clear();
             self.background = new BackGround(self.renderingToolPixi);
             //requestAnimationFrame(self.background.tick.bind(self.background));
         });

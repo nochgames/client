@@ -1,7 +1,11 @@
 body{
     margin: 0;
     background-color: #000;
-
+}
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 h1{
     font-family: Archive;
@@ -20,7 +24,7 @@ h1{
 #main {
     width: 100%;
     height: 100%;
-    background-image : url('../background.jpg');    
+    background-image : url('../background.jpg');
     background-color: #000000;
     background-repeat: no-repeat;
     background-size: cover;
@@ -70,7 +74,7 @@ h1{
     color: white;width: 85%;
     font-size:20px; 
     height:40px;
-    background-color: #181715; 
+    background-color: #181715;
     
 }
 .input_login:focus {

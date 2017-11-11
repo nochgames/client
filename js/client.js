@@ -82,39 +82,207 @@ Game and rendering logic
 ======================================================================================
 */
 
+const collectionOfImages = [
+    {
+        prefix: "3layer/q",
+        count: 30
+    }, {
+        prefix: "2layer/",
+        count: 35
+    }, {
+        prefix: "1layer/q",
+        count: 29
+    }, {
+        prefix: "clouds/",
+        count: 29
+    }
+];
+
+class BackGround {
+    constructor(pixiApp) {
+        this.collectionBackgroundItem = new BackGroundItemCollection(pixiApp);
+        this.prevPlayerPosition = {
+            x: dataStorage.mainPlayerPosition.x,
+            y: dataStorage.mainPlayerPosition.y
+        };
+        this.prevCoefScale = dataStorage.coefficient;
+    }
+
+    tick() {
+        var deltaPlayerPosition = {
+                x: dataStorage.mainPlayerPosition.x - this.prevPlayerPosition.x,
+                y: dataStorage.mainPlayerPosition.y - this.prevPlayerPosition.y
+            },
+            deltaCoefScale =  this.prevCoefScale - dataStorage.coefficient;
+
+        this.collectionBackgroundItem.tick(deltaPlayerPosition, deltaCoefScale);
+        this.prevPlayerPosition = {
+            x: dataStorage.mainPlayerPosition.x,
+            y: dataStorage.mainPlayerPosition.y
+        };
+        this.prevCoefScale = dataStorage.coefficient;
+        //requestAnimationFrame( this.tick.bind(this) );
+    }
+}
+
+class BackGroundItemCollection {
+    static get collectionOfImages() {
+        return collectionOfImages;
+    }
+
+    constructor(pixiApp) {
+        this.collectionOfLevels = [ [], [], [], [] ];
+        this.densityOfLevel = [60000, 100000, 60000, 60000];
+        this.coefForMovie = [1.2, 0.9, 0.6, 0.3];
+        this.coefForSize = [1.5, 1, 0.5, 1];
+        this.conuts = [];
+        this.container = new PIXI.Container();
+        pixiApp.stage.addChild(this.container);
+
+        this.fillArea(- dataStorage.size.width / 4, - dataStorage.size.height / 4,
+            dataStorage.size.width * 5 / 4, dataStorage.size.height * 5 / 4);
+    }
+
+    fillArea(minX, minY, maxX, maxY) {
+        var baseCatalog = "/",
+            collectionOfImages = BackGroundItemCollection.collectionOfImages;
+        for (var i = this.collectionOfLevels.length - 1; i >= 0; i--) {            //потому что нужно захватить еще и не отображаемые поля
+            
+            var count = Math.floor((maxX - minX) * (maxY - minY) / (this.densityOfLevel[i] * dataStorage.coefficient)),
+                oldLengthCollection = this.collectionOfLevels[i].length;
+
+        	console.log("level " + i + " old quantity " + this.collectionOfLevels[i].length + " new quantity " + (count + oldLengthCollection));
+            while (this.collectionOfLevels[i].length < count + oldLengthCollection) {
+                //пришлось манипулировать с единицами так, как номера картинок начинаются с 1, а не с 0
+                var randomIndexImage = Math.floor(Math.random() * (collectionOfImages[i].count - 1) + 1),
+                    randomImageSrc = baseCatalog + collectionOfImages[i].prefix + randomIndexImage + ".png",
+                    randomPosition = {
+                        x: Math.floor(Math.random() * (maxX - minX)) + minX,
+                        y: Math.floor(Math.random() * (maxY - minY)) + minY
+                    };
+                this.collectionOfLevels[i].push(new BackgroundItem(
+                	randomPosition, randomImageSrc, this.coefForMovie[i], this.coefForSize[i], this.container));
+            }
+
+        	//console.log("level " + i + " " + this.collectionOfLevels[i].length);
+
+        }
+    }
+
+    tick(deltaPlayerPosition, deltaCoefScale) {
+        if (deltaCoefScale) {
+            this.zoomGame(deltaCoefScale);
+        }
+
+        for (var i = 0; i < this.collectionOfLevels.length; i++) {
+            for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
+                this.holdIfGetOut(this.collectionOfLevels[i][j]);
+                if (deltaPlayerPosition) {
+                    this.collectionOfLevels[i][j].tick(deltaPlayerPosition);
+                }
+                //drawManager.drawBackgroundItem(this.collectionOfLevels[i][j]);
+            }
+        }
+    }
+    holdIfGetOut(itemBackground) {
+        if (itemBackground.graphics.position.x <= - dataStorage.size.width / 4) {
+            itemBackground.graphics.position.x += 3 / 2 * dataStorage.size.width;
+        } else if (itemBackground.graphics.position.x >= dataStorage.size.width * 5 / 4) {
+            itemBackground.graphics.position.x -= 3 / 2 * dataStorage.size.width;
+        } else if (itemBackground.graphics.position.y <= - dataStorage.size.height / 4) {
+            itemBackground.graphics.position.y += 3 / 2 * dataStorage.size.height;
+        } else if (itemBackground.graphics.position.y >= dataStorage.size.height * 5 / 4) {
+            itemBackground.graphics.position.y -= 3 / 2 * dataStorage.size.height;
+        }
+    }
+
+    zoomGameGrow(deltaCoefScale) {
+
+    }
+
+    zoomGame(deltaCoefScale) {
+        console.log("\n\n");
+        for (var i = 0; i < this.collectionOfLevels.length; i++) {
+        	console.log("level " + i + " " + this.collectionOfLevels[i].length);
+            for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
+                this.collectionOfLevels[i][j].graphics.scale.set(dataStorage.coefficient * this.collectionOfLevels[i][j].coefForSize);
+                this.collectionOfLevels[i][j].graphics.position.set(((this.collectionOfLevels[i][j].graphics.position.x - dataStorage.middle.x) /
+                    (deltaCoefScale + dataStorage.coefficient)) * dataStorage.coefficient +
+                    dataStorage.middle.x,
+                    (this.collectionOfLevels[i][j].graphics.position.y - dataStorage.middle.y) /
+                    (deltaCoefScale + dataStorage.coefficient) * dataStorage.coefficient +
+                    dataStorage.middle.y);
+            }
+        }
+        if (deltaCoefScale > 0) {
+            // увеличение
+            var newMinX = - dataStorage.size.width / 4,
+                newMinY = - dataStorage.size.height / 4,
+                newMaxX = dataStorage.size.width * 5 / 4,
+                newMaxY = dataStorage.size.height * 5 / 4,
+                oldMinX = ((- dataStorage.size.width / 4 -
+                    dataStorage.middle.x) / (deltaCoefScale + dataStorage.coefficient))
+                    * dataStorage.coefficient + dataStorage.middle.x,
+                oldMinY = ((- dataStorage.size.height / 4 -
+                    dataStorage.middle.y) / (deltaCoefScale + dataStorage.coefficient))
+                    * dataStorage.coefficient + dataStorage.middle.y,
+                oldMaxX = ((dataStorage.size.width * 5 / 4 -
+                    dataStorage.middle.x) / (deltaCoefScale + dataStorage.coefficient)) *
+                    dataStorage.coefficient + dataStorage.middle.x,
+                oldMaxY = ((dataStorage.size.height * 5 / 4 -
+                    dataStorage.middle.y) / (deltaCoefScale + dataStorage.coefficient)) *
+                    dataStorage.coefficient + dataStorage.middle.y;
+            this.fillArea(newMinX, oldMinY, oldMinX, oldMaxY);
+            this.fillArea(newMinX, oldMaxY, newMaxX, newMaxY);
+            this.fillArea(newMinX, newMinY, newMaxX, oldMinY);
+            this.fillArea(oldMaxX, oldMinY, newMaxX, oldMaxY);
+        } else {
+            // уменьшение
+            for (var i = 0; i < this.collectionOfLevels.length; i++) {
+                for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
+                    var itemBackground = this.collectionOfLevels[i][j];
+                    if ((itemBackground.graphics.position.x <= - dataStorage.size.width / 4)
+                        || (itemBackground.graphics.position.x >= dataStorage.size.width * 5 / 4)
+                        || (itemBackground.graphics.position.y <= - dataStorage.size.height / 4)
+                        || (itemBackground.graphics.position.y >= dataStorage.size.height * 5 / 4)) {
+                        this.deleteNode(i, j);
+                    }
+                }
+            }
+        }
+    }
+    deleteNode(layerIndex, itemIndex) {
+        if (itemIndex < 0) return;
+        this.collectionOfLevels[layerIndex][itemIndex].graphics.destroy();
+        this.collectionOfLevels[layerIndex].splice(itemIndex, 1);
+    }
+}
+
 class RendererPIXI {
+
     constructor(onLoadCallback) {
         this.app = new PIXI.Application(window.innerWidth, window.innerHeight,
-            {backgroundColor : 0x000000, transparent: true});
+            {backgroundColor : 0x000000, transparent: true,
+            view: document.getElementById('pixiCanvas')});
 
         this.preloadImages(onLoadCallback);
     }
 
-    preloadImages(setUp) {
-        let baseCatalog = "/",
-            collectionOfImages = [
-                {
-                    prefix: "3layer/q",
-                    count: 30
-                }, {
-                    prefix: "2layer/",
-                    count: 35
-                }, {
-                    prefix: "1layer/q",
-                    count: 29
-                }, {
-                    prefix: "clouds/",
-                    count: 29
-                }
-            ];
-        for (let i = 0; i < collectionOfImages.length; i++) {
-            for (let j = 1; j <= collectionOfImages[i].count; j++) {
-                PIXI.loader.add(baseCatalog + collectionOfImages[i].prefix + j + ".png");
+    setUp() {
+        document.body.appendChild(this.app.view);
+    }
+
+    preloadImages(onLoad) {
+        let baseCatalog = "/";
+
+        for (let i = 0; i < BackGroundItemCollection.collectionOfImages.length; i++) {
+            for (let j = 1; j <= BackGroundItemCollection.collectionOfImages[i].count; j++) {
+                PIXI.loader.add(baseCatalog + BackGroundItemCollection.collectionOfImages[i].prefix + j + ".png");
             }
         }
         PIXI.loader.load((loader, res) => {
-            setUp(loader, res);
-            document.body.appendChild(this.app.view);
+            onLoad(loader, res);
+            this.setUp();
         });
     }
 }
@@ -198,284 +366,65 @@ RendererCanvas.prototype = {
     }
 };
 
-var Background = function () {
-    this.collectionBackgroundItem = new CollectionBackgroundItem();
-    this.prevPlayerPosition = {
-        x: dataStorage.mainPlayerPosition.x,
-        y: dataStorage.mainPlayerPosition.y
-    };
-    this.prevCoefScale = dataStorage.coefficient;
-};
-Background.prototype = {
-    tick: function () {
-        var deltaPlayerPosition = {
-                x: dataStorage.mainPlayerPosition.x - this.prevPlayerPosition.x,
-                y: dataStorage.mainPlayerPosition.y - this.prevPlayerPosition.y
-            },
-            deltaCoefScale =  this.prevCoefScale - dataStorage.coefficient;
+class BackgroundItem {
 
-        drawManager.clearScreen();
-        this.collectionBackgroundItem.tick(deltaPlayerPosition, deltaCoefScale);
-        drawManager.updateScreen();
-        this.prevPlayerPosition = {
-            x: dataStorage.mainPlayerPosition.x,
-            y: dataStorage.mainPlayerPosition.y
+    static get MAX_VELOCITY() {
+        return 40.7;
+    }
+    static get MAX_RAD_VELOCITY() {
+        return 0.02;
+    }
+    static get COEF_STEP() {
+        return 0.3;
+    }
+
+    constructor(position, imageName, coefForMove, coefForSize, parent) {
+        let maxVelocity = BackgroundItem.MAX_VELOCITY * coefForMove;
+        let minVelocity = BackgroundItem.MAX_VELOCITY * (coefForMove - BackgroundItem.COEF_STEP);
+        this.velocity = {
+            //не округляется потому, что скорости слишком малы < 1
+            x: (Math.random() * (maxVelocity - minVelocity) + minVelocity) * (Math.random() > 0.5 ? 1: -1),
+            y: (Math.random() * (maxVelocity - minVelocity) + minVelocity) * (Math.random() > 0.5 ? 1: -1)
         };
-        this.prevCoefScale = dataStorage.coefficient;
-        //requestAnimationFrame( this.tick.bind(this) );
+        let angle = Math.random() * (2 * BackgroundItem.MAX_RAD_VELOCITY) -
+            BackgroundItem.MAX_RAD_VELOCITY * coefForMove;
+        this.radVelocity = (Math.random() * (2 * BackgroundItem.MAX_RAD_VELOCITY) -
+            BackgroundItem.MAX_RAD_VELOCITY) * coefForMove;
+
+        this.graphics = new PIXI.Sprite.fromImage(imageName);
+        this.graphics.rotation = angle;
+        this.graphics.position.set(position.x, position.y);
+        this.coefForSize = coefForSize;
+        this.graphics.scale.set(dataStorage.coefficient * coefForSize);
+
+        parent.addChild(this.graphics);
     }
-};
 
-var CollectionBackgroundItem = function () {
-    this.collectionOfLevels = [ [], [], [], [] ];
-    this.densityOfLevel = [60000, 100000, 60000, 60000];
-    this.coefForMovie = [0.8, 0.5, 0.2, 0.1];
-    this.fillingArea(- dataStorage.size.width / 4, - dataStorage.size.height / 4,
-                        dataStorage.size.width * 5 / 4, dataStorage.size.height * 5 / 4);
-};
-CollectionBackgroundItem.prototype = {
-    //constructor: CollectionBackgroundItem,
-    fillingArea: function (minX, minY, maxX, maxY) {
-        var baseCatalog = "/",
-            collectionOfImages = [
-                {
-                    prefix: "3layer/q",
-                    count: 30
-                }, {
-                    prefix: "2layer/",
-                    count: 35
-                }, {
-                    prefix: "1layer/q",
-                    count: 29
-                }, {
-                    prefix: "clouds/",
-                    count: 29
-                }
-            ];
-        for (var i = this.collectionOfLevels.length - 1; i >= 0; i--) {
-            //потому что нужно захватить еще и не отображаемые поля
-            var count = Math.floor((maxX - minX) * (maxY - minY) / (this.densityOfLevel[i] * dataStorage.coefficient)),
-                oldLengthCollection = this.collectionOfLevels[i].length;
-
-            while (this.collectionOfLevels[i].length < count + oldLengthCollection) {
-                //пришлось манипулировать с единицами так, как номера картинок начинаются с 1, а не с 0
-                var randomIndexImage = Math.floor(Math.random() * (collectionOfImages[i].count - 1) + 1),
-                    randomImageSrc = baseCatalog + collectionOfImages[i].prefix + randomIndexImage + ".png",
-                    randomPosition = {
-                        x: Math.floor(Math.random() * (maxX - minX)) + minX,
-                        y: Math.floor(Math.random() * (maxY - minY)) + minY
-                    };
-                this.collectionOfLevels[i].push(new BackgroundItem(randomPosition, randomImageSrc, this.coefForMovie[i]));
-            }
-        }
-    },
-    tick: function (deltaPlayerPosition, deltaCoefScale) {
-        if (deltaCoefScale) {
-            this.zoomGame(deltaCoefScale);
-        }
-
-        for (var i = 0; i < this.collectionOfLevels.length; i++) {
-            for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
-                this.holdIfGetOut(this.collectionOfLevels[i][j]);
-                if (deltaPlayerPosition) {
-                    this.collectionOfLevels[i][j].tick(deltaPlayerPosition);
-                }
-                drawManager.drawBackgroundItem(this.collectionOfLevels[i][j]);
-            }
-        }
-    },
-    holdIfGetOut: function (itemBackground) {
-        if (itemBackground.position.x <= - dataStorage.size.width / 4) {
-            itemBackground.position.x += 3 / 2 * dataStorage.size.width;
-        } else if (itemBackground.position.x >= dataStorage.size.width * 5 / 4) {
-            itemBackground.position.x -= 3 / 2 * dataStorage.size.width;
-        } else if (itemBackground.position.y <= - dataStorage.size.height / 4) {
-            itemBackground.position.y += 3 / 2 * dataStorage.size.height;
-        } else if (itemBackground.position.y >= dataStorage.size.height * 5 / 4) {
-            itemBackground.position.y -= 3 / 2 * dataStorage.size.height;
-        }
-    },
-    zoomGame: function (deltaCoefScale) {
-        for (var i = 0; i < this.collectionOfLevels.length; i++) {
-            for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
-                this.collectionOfLevels[i][j].position = {
-                    x: ((this.collectionOfLevels[i][j].position.x - dataStorage.middle.x) /
-                        (deltaCoefScale + dataStorage.coefficient)) * dataStorage.coefficient +
-                        dataStorage.middle.x,
-                    y: ((this.collectionOfLevels[i][j].position.y - dataStorage.middle.y) /
-                        (deltaCoefScale + dataStorage.coefficient)) * dataStorage.coefficient +
-                        dataStorage.middle.y
-                };
-            }
-        }
-        if (deltaCoefScale > 0) {
-            //уменьшение
-            var newMinX = - dataStorage.size.width / 4,
-                newMinY = - dataStorage.size.height / 4,
-                newMaxX = dataStorage.size.width * 5 / 4,
-                newMaxY = dataStorage.size.height * 5 / 4,
-                oldMinX = ((- dataStorage.size.width / 4 -
-                    dataStorage.middle.x) / (deltaCoefScale + dataStorage.coefficient))
-                    * dataStorage.coefficient + dataStorage.middle.x,
-                oldMinY = ((- dataStorage.size.height / 4 -
-                    dataStorage.middle.y) / (deltaCoefScale + dataStorage.coefficient))
-                    * dataStorage.coefficient + dataStorage.middle.y,
-                oldMaxX = ((dataStorage.size.width * 5 / 4 -
-                    dataStorage.middle.x) / (deltaCoefScale + dataStorage.coefficient)) *
-                    dataStorage.coefficient + dataStorage.middle.x,
-                oldMaxY = ((dataStorage.size.height * 5 / 4 -
-                    dataStorage.middle.y) / (deltaCoefScale + dataStorage.coefficient)) *
-                    dataStorage.coefficient + dataStorage.middle.y;
-            this.fillingArea(newMinX, oldMinY, oldMinX, oldMaxY);
-            this.fillingArea(newMinX, oldMaxY, newMaxX, newMaxY);
-            this.fillingArea(newMinX, newMinY, newMaxX, oldMinY);
-            this.fillingArea(oldMaxX, oldMinY, newMaxX, oldMaxY);
-        } else {
-            //уменьшение
-            for (var i = 0; i < this.collectionOfLevels.length; i++) {
-                for (var j = 0; j < this.collectionOfLevels[i].length; j++) {
-                    var itemBackground = this.collectionOfLevels[i][j];
-                    if ((itemBackground.position.x <= - dataStorage.size.width / 4)
-                        || (itemBackground.position.x >= dataStorage.size.width * 5 / 4)
-                        || (itemBackground.position.y <= - dataStorage.size.height / 4)
-                        || (itemBackground.position.y >= dataStorage.size.height * 5 / 4)) {
-                        this.deleteNode(i, j);
-                    }
-                }
-            }
-        }
-    },
-    deleteNode: function (layerIndex, itemIndex) {
-        if (itemIndex < 0) return;
-        this.collectionOfLevels[layerIndex].splice(itemIndex, 1);
+    selfMovie() {
+        this.graphics.position.x += dataStorage.coefficient * this.velocity.x;
+        this.graphics.position.y += dataStorage.coefficient * this.velocity.y;
+        this.graphics.rotation += dataStorage.coefficient * this.radVelocity;
     }
-};
-
-function BackgroundItem(position, src, coefForMove) {
-    var MAX_VELOCITY = 0.1,
-        MAX_RAD_VELOCITY = 0.2,
-        image;
-    this.position = position;
-    this.velocity = {
-        //не округляется потому, что скорости слишком малы < 1
-        x: Math.random() * (2 * MAX_VELOCITY) - MAX_VELOCITY,
-        y: Math.random() * (2 * MAX_VELOCITY) - MAX_VELOCITY
-    };
-    this.angle = Math.random() * (2 * MAX_RAD_VELOCITY) - MAX_RAD_VELOCITY;
-    this.radVelocity = Math.random() * (2 * MAX_RAD_VELOCITY) - MAX_RAD_VELOCITY;
-    this.coefForMove = coefForMove;
-    this.src = src;
-}
-BackgroundItem.prototype = {
-    constructor: BackgroundItem,
-    selfMovie: function () {
-        this.position.x += this.coefForMove * dataStorage.coefficient * this.velocity.x;
-        this.position.y += this.coefForMove * dataStorage.coefficient * this.velocity.y;
-        this.angle += this.coefForMove * dataStorage.coefficient * this.radVelocity;
-    },
-    playerMovie: function (deltaPlayerPosition) {
-        this.position.x -= this.coefForMove * dataStorage.coefficient * deltaPlayerPosition.x;
-        this.position.y -= this.coefForMove * dataStorage.coefficient * deltaPlayerPosition.y;
-    },
-    ceilPos: function() {
-        this.position.x = this.position.x << 0;
-        this.position.y = this.position.y << 0;
-    },
-    tick: function (deltaPlayerPosition) {
+    playerMovie(deltaPlayerPosition) {
+        this.graphics.position.x -= dataStorage.coefficient * deltaPlayerPosition.x;
+        this.graphics.position.y -= dataStorage.coefficient * deltaPlayerPosition.y;
+    }
+    ceilPos() {
+        this.graphics.position.x = this.graphics.position.x << 0;
+        this.graphics.position.y = this.graphics.position.y << 0;
+    }
+    tick(deltaPlayerPosition) {
         this.selfMovie();
         this.playerMovie(deltaPlayerPosition);
         //this.ceilPos();
     }
-};
-
-function DrawManager(idObjectForDrawing) {
-    this.stage = new createjs.Stage( document.getElementById(idObjectForDrawing) );
-    this.queue = new createjs.LoadQueue();
-    this.queue.installPlugin(createjs.Bitmap);
-    this.queue.on("complete", this.handleComplete, this);
-    this.preloaderFlag = true;
 }
-DrawManager.prototype = {
-    constructor: DrawManager,
-    handleComplete: function () {
-        this.preloaderFlag = true;
-    },
-    runPreloader: function () {
-        this.preloaderFlag = false;
-        //TODO не соответстветствует DRY
-        var baseCatalog = "/",
-            collectionOfImages = [
-                {
-                    prefix: "3layer/q",
-                    count: 30
-                }, {
-                    prefix: "2layer/",
-                    count: 35
-                }, {
-                    prefix: "1layer/q",
-                    count: 29
-                }, {
-                    prefix: "clouds/",
-                    count: 29
-                }
-            ];
-        for (var i = 0; i < collectionOfImages.length; i++) {
-            for (var j = 1; j <= collectionOfImages[i].count; j++) {
-                this.queue.loadFile({
-                    id:  baseCatalog + collectionOfImages[i].prefix + j + ".png",
-                    src:  baseCatalog + collectionOfImages[i].prefix + j + ".png"
-                });
-            }
-        }
-    },
-    drawBackgroundItem: function (itemBackground) {
-        if (!this.preloaderFlag) return;
-        var positionOnCanvas = {
-                x: itemBackground.position.x,
-                y: itemBackground.position.y
-            },
-            bitmap,
-            image;
-
-        //если объект не виден на экране не рисуем его
-        if (!this.isVisible(positionOnCanvas)) return;
-
-        image = this.queue.getResult(itemBackground.src);
-        bitmap = new createjs.Bitmap(image);
-        bitmap.x = positionOnCanvas.x;
-        bitmap.y = positionOnCanvas.y;
-        bitmap.rotation = itemBackground.angle;
-        bitmap.scaleX = dataStorage.coefficient;
-        bitmap.scaleY = dataStorage.coefficient;
-        this.stage.addChild(bitmap);
-    },
-    isVisible: function (positionOnCanvas) {
-        //TODO разобраться с оптимизацией, не получлось вернуть размер картинки, а то рисуются все картинки даже которые не попадают в канвас
-        /*
-         //за правой или нижней границей
-         if (((positionOnCanvas.x - this.bitmap.width) >= dataStorage.size.width) || ((positionOnCanvas.y - this.bitmap.height) >= dataStorage.size.height)) {
-         return false;
-         }
-         //за верхней или левой границей
-         if (((positionOnCanvas.x + this.bitmap.width) <= 0) || ((positionOnCanvas.y + this.bitmap.height) <= 0)) {
-         return false;
-         }
-         */
-        return true;
-    },
-    clearScreen: function () {
-        this.stage.removeAllChildren();
-    },
-    updateScreen: function () {
-        this.stage.update();
-    }
-};
     
 var dataStorage = (function() {
     var coefficient,
         targetCoefficient = coefficient = 0.2,
         inputData = {},
-        send = false,f
+        send = false,
         outputData = { "mouseX": 0, "mouseY": 0},
         leaderBoard = {},
         mainPlayer = null,
@@ -662,7 +611,6 @@ var dataStorage = (function() {
     }
 })();
 
-
 var GameWebSocket = function(WS_URL) {
     console.log(WS_URL);
     this.socket = new WebSocket(WS_URL);
@@ -793,6 +741,7 @@ var Noch = function(WS_URL, renderingTool) {
     this.bonds = [];
     this.garbageAll = {};
     this.renderingTool = renderingTool;
+    this.renderingToolPixi = rendererPixi.app;
     this.wsUrl = WS_URL;
     this.addSocket();
     this.letterSizeCoefficient = 1.5;
@@ -1079,7 +1028,7 @@ Noch.prototype = {
             self.garbageAll = {};
 
             var waiting = setInterval(function() {
-                if (self.gameSocket.socket.readyState == WebSocket.OPEN) {
+                if (self.gameSocket.socket.readyState === WebSocket.OPEN) {
                     self.addMainPlayer(self.name, self.color);
                     document.removeEventListener('keydown', restart);
                     $("#last_for_close_dead_window").hide(500);
@@ -1089,7 +1038,7 @@ Noch.prototype = {
 
         };
         setTimeout(function() {
-            document.addEventListener('keydown', restart);
+            document.body.addEventListener('keydown', restart);
         }, 2000);
     },
 
@@ -1131,7 +1080,6 @@ Noch.prototype = {
                 self.garbageAll[newData.bp].color = 'white';
             }
         });
-
         this.gameSocket.addGamemechanicsCallBack('bg', function(newData) {
             if (self.garbageAll[newData.bg]) {
                 self.garbageAll[newData.bg].color = newData.c;
@@ -1142,7 +1090,7 @@ Noch.prototype = {
             dataStorage.setBrickSize(newData.bh, newData.bl);
             self.mainPlayer = { position: {x: newData.sp.x, y: newData.sp.y } };
             dataStorage.setMainPlayer({ position: {x: newData.sp.x, y: newData.sp.y } });
-            self.background = new Background();
+            self.background = new BackGround(self.renderingToolPixi);
             //requestAnimationFrame(self.background.tick.bind(self.background));
         });
 
@@ -1256,7 +1204,7 @@ Noch.prototype = {
     },
 
     draw: function() {
-        //this.renderingTool.clearScreen();
+        this.renderingTool.clearScreen();
         this.drawBonds();
         this.drawGarbage();
         this.drawPlayers();
@@ -1286,18 +1234,15 @@ Start of the game
 
 hideOverlay();
 
-var drawManager = new DrawManager("canvas");
-drawManager.runPreloader();
-var renderer = new RendererCanvas('canvas');
-
 var Game;
 
+let start = ()=> {
+    var renderer = new RendererCanvas('canvas');
 
-let start = () => {
     let url = 'http://' + location.hostname + ':' + location.port + '/api/ports';
     $.get(url, function (port) {
 
-        if (port != -1) {
+        if (port !== -1) {
             hideOverlay();
             Game = new Noch('ws://' + location.hostname + ':' + port, renderer);
             Game.run();

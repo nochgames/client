@@ -1,224 +1,214 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>N-o-C-H</title>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>NOCH</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="/style.css">
     <script type="text/javascript" src="lib/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="lib/pixi.js"></script>
     <script type="text/javascript" src="lib/farbtastic.js"></script>
     <script type="text/javascript" src="lib/easeljs-0.8.2.min.js"></script>
-    <script type="text/javascript" src="lib/preloadjs-0.6.2.min.js"></script>
     <script type="text/javascript" src="help.js"></script>
     <script type="text/javascript" src="hover_animation.js"></script>
     <script type="text/javascript" src="simple_animation.js"></script>
     <script type="text/javascript" src="circle_animation.js"></script>
     <script type="text/javascript" src="cookie.js"></script>
 </head>
-<style>
-</style>
 <body onkeypress="showChar(event);" >
-<div id="main">
-    <img id=btn__hide src="eye.png">
-    <div id="overlay">
-        
-
-        <div id="overlay_opacity">
+    <div id="ui">
+        <img id=btn__hide src="eye.png">
+        <div id="dead" style="z-index: 3" onmousedown="return false" onselectstart="return false">
+            <!--Death animation-->
         </div>
-       
-        <div id="menu">
-            <h1>NOCH</h1>
-            <img height="80" style="position: absolute; top: 165px; right: -5px;z-index: 2;" id="try_more" src="assets/try_more.png"> </img>
-            <a  id="garage_ref" href="http://nochgames.ru/we/">
-               <!--Animation -->
-            </a>
-            <ul class = "input_type_ul">
-                <li class="input_type_li">
-                    <input name="login" id="login__input" placeholder="login" class="input_login">
-                </li>
-                <li class="input_type_li">
-                    <!-- <input name="password" id="password__input" placeholder="password" style="color: white; font-size:20px; width: 85%; height:30px;background-color: #181715;border: 2px grey solid;"> -->
-                    <script type="text/javascript" charset="utf-8">
-                        $(document).ready(function() {
-                            $('#demo').hide();
-                            $('#picker').farbtastic('#btn__go');
-                        });
-                    </script>
+        <div id="overlay">
+            <div id="overlay_opacity"></div>
+            <div id="menu">
+                <h1>NOCH</h1>
+                <img height="80" style="position: absolute; top: 165px; right: -5px;z-index: 2;" id="try_more" src="assets/try_more.png"> </img>
+                <a  id="garage_ref" href="http://nochgames.ru/we/">
+                    <!--Animation -->
+                </a>
+                <ul class = "input_type_ul">
+                    <li class="input_type_li">
+                        <input name="login" id="login__input" placeholder="login" class="input_login">
+                    </li>
+                    <li class="input_type_li">
+                        <!-- <input name="password" id="password__input" placeholder="password" style="color: white; font-size:20px; width: 85%; height:30px;background-color: #181715;border: 2px grey solid;"> -->
+                        <script type="text/javascript" charset="utf-8">
+                            $(document).ready(function() {
+                                $('#demo').hide();
+                                $('#picker').farbtastic('#btn__go');
+                            });
+                        </script>
 
-                    <form action="" style="width: 400px; z-index: 100;">
-                        <div class="form-item">
+                        <form action="" style="width: 400px; z-index: 100;">
+                            <div class="form-item">
 
+                            </div>
+                            <div id="picker"></div>
+
+                        </form>
+
+                        <div id="btn__go">
+                            <h2>GO</h2>
                         </div>
-                        <div id="picker"></div>
+                    </li>
+                </ul>
+            </div>
 
-                    </form>
-
-                    
-                    <div id="btn__go">
-                        <h2>GO</h2>
-                    </div>
-                </li>
-            </ul>
+            <div id = "leadership" style="font-family: Nevis;" onmousedown="return false" onselectstart="return false">
+                <table id = "leader_ship_table" style="float: right; border-spacing: 10px;"></table>
+            </div>
         </div>
+        <div id = 'help_animation' onmousedown="return false" onselectstart="return false"> </div>
+        <div id ="help" onmousedown="return false" onselectstart="return false"> </div>
     </div>
-     <div id = "leadership" style="font-family: Nevis;" onmousedown="return false" onselectstart="return false">
-            <table id = "leader_ship_table" style="float: right; border-spacing: 10px;">
-               
-               
-
-            </table>
-    </div> 
-    <div id = "dead" onmousedown="return false" onselectstart="return false"> 
-    <!--Death animation-->
+    <div>
+        <canvas style="z-index: 0;" id="pixiCanvas" onmousedown="return false" onselectstart="return false"></canvas>
+        <canvas style="z-index: 1;" id="canvas" onmousedown="return false" onselectstart="return false"></canvas>
     </div>
-    <div id = 'help_animation' onmousedown="return false" onselectstart="return false"> </div>
-    <div id ="help" onmousedown="return false" onselectstart="return false"> </div>
-    <canvas id="canvas" onmousedown="return false" onselectstart="return false"></canvas>
-</div>
-
-
-<script>   
-    var death_pic = [];
-    function deleteRows(table) {
-        var inputs = table.getElementsByTagName("input");
-        var i = inputs.length;
-        while (i--) {
-            var input = inputs[i];
-            if (input.checked == true) {
-                var tr = input.parentNode;
-                table.deleteRow(tr.rowIndex);
+    <script>
+        var death_pic = [];
+        function deleteRows(table) {
+            var inputs = table.getElementsByTagName("input");
+            var i = inputs.length;
+            while (i--) {
+                var input = inputs[i];
+                if (input.checked == true) {
+                    var tr = input.parentNode;
+                    table.deleteRow(tr.rowIndex);
+                }
             }
         }
-    }
 
-    function reload_table(ar){
-        var table = document.getElementById("leader_ship_table");
-        
-         while(table.childNodes.length){
-             table.removeChild(table.childNodes[0]);
-         }
-        for (var i=-1; i<ar.length;i++){
-            var tr = document.createElement('tr');
-            var td1 = document.createElement('td');
-            var td2 = document.createElement('td');
-            if (i == -1) {
-                td1.innerHTML = "NAME";
-                td2.innerHTML = "KILLS";
-            } else {
-                td1.innerHTML = ar[i].name;
-                td2.innerHTML = ar[i].kills;
+        function reload_table(ar){
+            var table = document.getElementById("leader_ship_table");
+
+             while(table.childNodes.length){
+                 table.removeChild(table.childNodes[0]);
+             }
+            for (var i=-1; i<ar.length;i++){
+                var tr = document.createElement('tr');
+                var td1 = document.createElement('td');
+                var td2 = document.createElement('td');
+                if (i == -1) {
+                    td1.innerHTML = "NAME";
+                    td2.innerHTML = "KILLS";
+                } else {
+                    td1.innerHTML = ar[i].name;
+                    td2.innerHTML = ar[i].kills;
+                }
+                td1.className = "leadership_table_td_name";
+                td2.className = "leadership_table_td_kills";
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                table.appendChild(tr);
             }
-            td1.className = "leadership_table_td_name";
-            td2.className = "leadership_table_td_kills";
-            tr.appendChild(td1);
-            tr.appendChild(td2);
-            table.appendChild(tr);
         }
-    }
-    //_______________анимация кнопки для гаража и подсказки купить атом чтоб мы получили бабки
-    var fly_help = [];
-    var shoot_help = [];
-    var dontDie_help = [];
-    $( document ).ready(function() {
-        //картинки для гаража
+        //_______________анимация кнопки для гаража и подсказки купить атом чтоб мы получили бабки
+        var fly_help = [];
+        var shoot_help = [];
+        var dontDie_help = [];
+        $( document ).ready(function() {
+            //картинки для гаража
 
-        var arr = [];
+            var arr = [];
 
-        for (var i=0;i<100;i++){
-            var img = document.createElement('img');
-            //img.className = "garage_img";
-            img.src = "garage/(" + (i+1) + ").png";
-            img.style.display = "none";
-            img.style.position = "absolute";
-            img.style.top = "161px";
-            img.style.right = "59px";
-            img.style.zIndex = 3;
-            var relative = document.getElementById('garage_ref');
-            relative.appendChild(img);
-            arr.push(img);
-            
-        }
-        arr[0].style.display = "block";
-        ///картнки для смерти
-        var arr2 = [];
-        for (var i=0;i<70;i++){
-            var img = document.createElement('img');
-            //img.className = "garage_img";
-            img.src = "dead/" + i + ".png";
-            img.style.display = "none";
-            img.style.zIndex = 3;
-            img.style.width = "100%";
-            if (i == 69) {
-                img.id = "last_for_close_dead_window";
+            for (var i=0;i<100;i++){
+                var img = document.createElement('img');
+                //img.className = "garage_img";
+                img.src = "garage/(" + (i+1) + ").png";
+                img.style.display = "none";
+                img.style.position = "absolute";
+                img.style.top = "161px";
+                img.style.right = "59px";
+                img.style.zIndex = 3;
+                var relative = document.getElementById('garage_ref');
+                relative.appendChild(img);
+                arr.push(img);
+
             }
-            var relative = document.getElementById('dead');
-            relative.appendChild(img);
-            arr2.push(img);
-        }
-        
-        ///
-        death_pic = arr2;
-        hover_animation(arr,100);
-        // simple_animation(death_pic,70);
-        for (var i=1;i<=115;i++){
-            var img = document.createElement('img');
-            //img.className = "garage_img";
-            img.src = "hints/fly/" + i + ".png";
-            img.style.display = "none";
-            img.style.position = "absolute";
-            img.style.top = "0px";
-            img.style.right = "0px";
-            img.style.zIndex = 3;
-            var relative = document.getElementById('help_animation');
-            relative.appendChild(img);
-            fly_help.push(img);
-            
-        }
+            arr[0].style.display = "block";
+            ///картнки для смерти
+            var arr2 = [];
+            for (var i=0;i<70;i++){
+                var img = document.createElement('img');
+                //img.className = "garage_img";
+                img.src = "dead/" + i + ".png";
+                img.style.display = "none";
+                img.style.zIndex = 3;
+                img.style.width = "100%";
+                if (i == 69) {
+                    img.id = "last_for_close_dead_window";
+                }
+                var relative = document.getElementById('dead');
+                relative.appendChild(img);
+                arr2.push(img);
+            }
 
-        for (var i=1;i<=30;i++){
-            var img = document.createElement('img');
-            //img.className = "garage_img";
-            img.src = "hints/shoot/" + i + ".png";
-            img.style.display = "none";
-            img.style.position = "absolute";
-            img.style.top = "0px";
-            img.style.right = "0px";
-            img.style.zIndex = 3;
-            var relative = document.getElementById('help_animation');
-            relative.appendChild(img);
-            shoot_help.push(img);
-            
-        }
-        for (var i=1;i<=30;i++){
-            var img = document.createElement('img');
-            //img.className = "garage_img";
-            img.src = "hints/dontDie/" + i + ".png";
-            img.style.display = "none";
-            img.style.position = "absolute";
-            img.style.top = "0px";
-            img.style.right = "0px";
-            img.style.zIndex = 3;
-            var relative = document.getElementById('help_animation');
-            relative.appendChild(img);
-            dontDie_help.push(img);
-            
-        }
-        
-    });
-     //______отключение увеличения умеьшения в сафари по плюсу и минусу
-     function showChar(e){
-          if (e.charCode == '61' || e.charCode == '45' || e.charCode == '43' || e.charCode == '95')
-          {
-            e.preventDefault(); 
+            ///
+            death_pic = arr2;
+            hover_animation(arr,100);
+            // simple_animation(death_pic,70);
+            for (var i=1;i<=115;i++){
+                var img = document.createElement('img');
+                //img.className = "garage_img";
+                img.src = "hints/fly/" + i + ".png";
+                img.style.display = "none";
+                img.style.position = "absolute";
+                img.style.top = "0px";
+                img.style.right = "0px";
+                img.style.zIndex = 3;
+                var relative = document.getElementById('help_animation');
+                relative.appendChild(img);
+                fly_help.push(img);
+
+            }
+
+            for (var i=1;i<=30;i++){
+                var img = document.createElement('img');
+                //img.className = "garage_img";
+                img.src = "hints/shoot/" + i + ".png";
+                img.style.display = "none";
+                img.style.position = "absolute";
+                img.style.top = "0px";
+                img.style.right = "0px";
+                img.style.zIndex = 3;
+                var relative = document.getElementById('help_animation');
+                relative.appendChild(img);
+                shoot_help.push(img);
+
+            }
+            for (var i=1;i<=30;i++){
+                var img = document.createElement('img');
+                //img.className = "garage_img";
+                img.src = "hints/dontDie/" + i + ".png";
+                img.style.display = "none";
+                img.style.position = "absolute";
+                img.style.top = "0px";
+                img.style.right = "0px";
+                img.style.zIndex = 3;
+                var relative = document.getElementById('help_animation');
+                relative.appendChild(img);
+                dontDie_help.push(img);
+
+            }
+
+        });
+         //______отключение увеличения умеьшения в сафари по плюсу и минусу
+         function showChar(e){
+              if (e.charCode == '61' || e.charCode == '45' || e.charCode == '43' || e.charCode == '95')
+              {
+                e.preventDefault();
+              }
+              return false;
           }
-          return false;   
-      }
 
 
-      
 
-</script>
-<script type="text/javascript" src="client.js"></script>
+
+    </script>
+    <script type="text/javascript" src="client.js"></script>
 </body>
 <div id="logs"></div>
 </html>
